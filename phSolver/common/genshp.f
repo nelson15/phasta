@@ -1,4 +1,4 @@
-        subroutine genshp (shp,    shgl, nshp, nblk)  
+        subroutine genshp (shp, shgl, nshp, nblk, num_elem_1D)
 c
 c----------------------------------------------------------------------
 c
@@ -10,15 +10,16 @@ c----------------------------------------------------------------------
 c
         include "common.h"
 c
-        dimension shp(MAXTOP,maxsh,MAXQPT), 
-     &            shgl(MAXTOP,nsd,maxsh,MAXQPT)
+        dimension shp(MAXTOP,maxsh,MAXQPT),
+     &            shgl(MAXTOP,nsd,maxsh,MAXQPT),
+     &            C(num_elem_1D, ipord+1,ipord+1)
 c
 c.... loop through element blocks
 c
         maxnint=1
           do iblk = 1, nblk
 c
-c.... get coord. system and element type 
+c.... get coord. system and element type
 c
             lcsyst = lcblk(3,iblk)
             nshl   = lcblk(10,iblk)
@@ -28,14 +29,14 @@ c
             select case ( lcsyst )
             case ( 1 )          ! tets
                maxnint=max(maxnint,nint(lcsyst))
-            do i=1,nint(lcsyst)  
+            do i=1,nint(lcsyst)
                call shpTet(ipord,Qpt(1,1:3,i),shp(1,:,i),shgl(1,:,:,i))
             enddo
-            shgl(1,:,1:nshl,1:nint(lcsyst)) = 
+            shgl(1,:,1:nshl,1:nint(lcsyst)) =
      &      shgl(1,:,1:nshl,1:nint(lcsyst))/two
-c     
+c
             case ( 2 )          ! hexes
-c     
+c
                maxnint=max(maxnint,nint(lcsyst))
             do i=1,nint(lcsyst)
                call shphex  (ipord, Qpt(2,1:3,i),shp(2,:,i),
@@ -51,11 +52,19 @@ c
             enddo
 
          case ( 5)              ! pyramids
-            
+
                maxnint=max(maxnint,nint(lcsyst))
             do i=1,nint(lcsyst)
                call shppyr (ipord,Qpt(5,1:3,i),shp(5,:,i),shgl(5,:,:,i))
-               
+
+            enddo
+c           ADDED BY COREY NELSON TO BUILD HEXIGA ELEMENT
+            case ( 6 )          ! IGA hexes
+c
+               maxnint=max(maxnint,nint(lcsyst))
+            do i=1,nint(lcsyst)
+               call shphexIGA  (ipord, Qpt(2,1:3,i),shp(2,:,i),
+     &                       shgl(2,:,:,i), C)
             enddo
 c
 c.... nonexistent element
