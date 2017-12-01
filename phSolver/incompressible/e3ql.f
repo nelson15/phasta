@@ -1,21 +1,21 @@
       subroutine e3ql (yl,      dwl,     shp,     shgl,
-     &                 xl,      ql,      xmudmi,
+     &                 C, xl,      ql,      xmudmi,
      &                 sgn )
-c                                                                      
+c
 c----------------------------------------------------------------------
 c
-c This routine computes the local diffusive flux vector using a 
+c This routine computes the local diffusive flux vector using a
 c local projection algorithm
 c
-c input: 
+c input:
 c  yl     (npro,nshl,ndof)       : Y variables
 c  shp    (nen,ngauss)           : element shape-functions
 c  shgl   (nsd,nen,ngauss)       : element local-grad-shape-functions
 c  xl     (npro,nshape,nsd)      : nodal coordinates at current step
 c  sgn    (npro,nshl)            : signs for reversed shape functions
-c  
+c
 c output:
-c  ql     (npro,nshl,nsd*nsd) : element RHS diffusion residual 
+c  ql     (npro,nshl,nsd*nsd) : element RHS diffusion residual
 c
 c----------------------------------------------------------------------
 c
@@ -24,6 +24,7 @@ c
 c
       dimension yl(npro,nshl,ndof),        dwl(npro,nshl),
      &          shp(nshl,ngauss),          shgl(nsd,nshl,ngauss),
+     &          C(num_elem_1D, ipord+1,ipord+1),
      &          xl(npro,nenl,nsd),         sgn(npro,nshl),
      &          ql(npro,nshl,idflx), xmudmi(npro,ngauss)
 c
@@ -48,17 +49,17 @@ c
       rminv = zero
       rmass = zero
       qrl   = zero
-        
+
       do intp = 1, ngauss
 
-         call getshp(shp, shgl, sgn, shape, shdrv)
+         call getshp(shp, shgl, C, sgn, shape, shdrv)
 
          qdi = zero
 c
-c.... calculate the integration variables 
-c    
+c.... calculate the integration variables
 c
-         call e3qvar   (yl,           shdrv,   
+c
+         call e3qvar   (yl,           shdrv,
      &                  xl,           g1yi,
      &                  g2yi,         g3yi,         shg,
      &                  dxidx,        WdetJ )
@@ -76,7 +77,7 @@ c
          qdi(:,2) =        rmu * (g1yi(:,3) + g2yi(:,2))
          qdi(:,5) =  two * rmu *  g2yi(:,3)
          qdi(:,8) =        rmu * (g2yi(:,4) + g3yi(:,3))
-c     
+c
 c.... diffusive flux in x3-direction
 c
          qdi(:,3) =        rmu * (g1yi(:,4) + g3yi(:,2))
@@ -84,22 +85,22 @@ c
          qdi(:,9)=  two * rmu *  g3yi(:,4)
 c
 c
-c.... assemble contribution of qdi to qrl,i.e., contribution to 
+c.... assemble contribution of qdi to qrl,i.e., contribution to
 c     each element shape function
 c
          tmp = Qwt(lcsyst,intp)
-         if (lcsyst .eq. 1) then 
+         if (lcsyst .eq. 1) then
             tmp = tmp*(three/four)
          endif
 c
 c reconsider this when hierarchic wedges come into code WDGCHECK
 c
-        
+
          do i=1,nshl
             qrl(:,i,1 ) = qrl(:,i,1 )+ shape(:,i)*tmp*qdi(:,1 )
             qrl(:,i,2 ) = qrl(:,i,2 )+ shape(:,i)*tmp*qdi(:,2 )
             qrl(:,i,3 ) = qrl(:,i,3 )+ shape(:,i)*tmp*qdi(:,3 )
-            
+
             qrl(:,i,4 ) = qrl(:,i,4 )+ shape(:,i)*tmp*qdi(:,4 )
             qrl(:,i,5 ) = qrl(:,i,5 )+ shape(:,i)*tmp*qdi(:,5 )
             qrl(:,i,6 ) = qrl(:,i,6 )+ shape(:,i)*tmp*qdi(:,6 )
@@ -138,14 +139,14 @@ c.... find the inverse of the local mass matrix for each element
                   enddo
                   lmassinv(iblock)%p(iel,i,i)=1.0
                enddo
-c     
+c
 c.... LU factor the mass matrix
 c
                call ludcmp(rmass(iel,:,:),nshl,nshl,indx,d)
-c     
+c
 c.... back substitute with the identy matrix to find the
 c     matrix inverse
-c          
+c
                do j=1,nshl
                   call lubksb(rmass(iel,:,:),nshl,nshl,indx,
      &                        lmassinv(iblock)%p(iel,:,j))
@@ -176,11 +177,11 @@ c
 
       subroutine e3qlSclr (yl,      dwl,     shp,     shgl,
      &                     xl,      ql,      sgn )
-c                                                                      
+c
 c----------------------------------------------------------------------
 c
-c This routine computes the local diffusive flux vector using a 
-c local projection algorithm: 
+c This routine computes the local diffusive flux vector using a
+c local projection algorithm:
 c     diffus * phi,i
 c
 c----------------------------------------------------------------------
@@ -211,17 +212,17 @@ c
       rminv = zero
       rmass = zero
       qrl   = zero
-        
+
       do intp = 1, ngauss
 
          call getshp(shp, shgl, sgn, shape, shdrv)
 
          qdi = zero
 c
-c.... calculate the integration variables 
-c    
+c.... calculate the integration variables
 c
-         call e3qvarSclr  (yl,           shdrv,        xl,           
+c
+         call e3qvarSclr  (yl,           shdrv,        xl,
      &                     gradT,        dxidx,        WdetJ )
 c
 c....  call function to sort out diffusivity (at end of this file)
@@ -235,14 +236,14 @@ c
          qdi(:,3) =  diffus * gradT(:,3)
 
 c
-c.... assemble contribution of qdi to qrl,i.e., contribution to 
+c.... assemble contribution of qdi to qrl,i.e., contribution to
 c     each element shape function
 c
          tmp = Qwt(lcsyst,intp)
-         if (lcsyst .eq. 1) then 
+         if (lcsyst .eq. 1) then
             tmp = tmp*(three/four)
          endif
-        
+
          do i=1,nshl
             qrl(:,i,1 ) = qrl(:,i,1 )+ shape(:,i)*tmp*qdi(:,1 )
             qrl(:,i,2 ) = qrl(:,i,2 )+ shape(:,i)*tmp*qdi(:,2 )
@@ -269,7 +270,7 @@ c
        qrl   = qrl/6.d0
 c
 c.... Assuming that lmassinv was already computed for flow equations
-c     
+c
        rmass = rmass/6.0
 c
 c.... for cubics, it cannot be precomputed, so compute and
@@ -285,14 +286,14 @@ c
                   enddo
                   lmassinv(iblock)%p(iel,i,i)=1.0
                enddo
-c     
+c
 c.... LU factor the mass matrix
 c
                call ludcmp(rmass(iel,:,:),nshl,nshl,indx,d)
-c     
+c
 c.... back substitute with the identy matrix to find the
 c     matrix inverse
-c          
+c
                do j=1,nshl
                   call lubksb(rmass(iel,:,:),nshl,nshl,indx,
      &                        lmassinv(iblock)%p(iel,:,j))

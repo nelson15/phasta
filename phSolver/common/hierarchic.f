@@ -1,6 +1,6 @@
 c------------------------------------------------------------------------
 c
-c This file contains functions for dealing with higher order shape 
+c This file contains functions for dealing with higher order shape
 c functions at the element level.
 c
 c Christian Whiting, Winter 1999
@@ -15,7 +15,7 @@ c------------------------------------------------------------------------
       include "common.h"
 
       dimension ien(npro,nshl),  sgn(npro,nshl)
-      
+
       do i=nenl+1,nshl
          where ( ien(:,i) < 0 )
             sgn(:,i) = -one
@@ -23,22 +23,23 @@ c------------------------------------------------------------------------
             sgn(:,i) = one
          endwhere
       enddo
-      
-      return 
+
+      return
       end
-      
-      subroutine getshp(shp, shgl, sgn, shape, shdrv)
+
+      subroutine getshp(shp, shgl, C, sgn, shape, shdrv)
 c------------------------------------------------------------------------
 c     returns the matrix of element shape functions with the higher
 c     order modes correctly negated at the current quadrature point.
 c------------------------------------------------------------------------
       include "common.h"
-      
+
       dimension shp(nshl,ngauss),   shgl(nsd,nshl,ngauss),
+     &          C(num_elem_1D, ipord+1,ipord+1),
      &          sgn(npro,nshl),     shape(npro,nshl),
      &          shdrv(npro,nsd,nshl)
-      
-      
+
+
       do i=1,nenl
          shape(:,i) = shp(i,intp)
          do j=1,3
@@ -49,15 +50,15 @@ c------------------------------------------------------------------------
          do i=nenl+1,nshl
             shape(:,i) = sgn(:,i) * shp(i,intp)
             do j=1,3
-               shdrv(:,j,i) = shgl(j,i,intp)*sgn(:,i) 
+               shdrv(:,j,i) = shgl(j,i,intp)*sgn(:,i)
             enddo
          enddo
       endif
-      
-      return 
+
+      return
       end
-      
-      subroutine getshpb(shp, shgl, sgn, shape, shdrv)
+
+      subroutine getshpb(shp, shgl, C, sgn, shape, shdrv)
 c------------------------------------------------------------------------
 c     returns the matrix of element shape functions with the higher
 c     order modes correctly negated at the current quadrature point.
@@ -65,10 +66,11 @@ c------------------------------------------------------------------------
       include "common.h"
 
       dimension shp(nshl,ngaussb),  shgl(nsd,nshl,ngaussb),
+     &          C(num_elem_1D, ipord+1,ipord+1),
      &          sgn(npro,nshl),     shape(npro,nshl),
      &          shdrv(npro,nsd,nshl)
-      
-      
+
+
       do i=1,nenl
          shape(:,i) = shp(i,intp)
          do j=1,3
@@ -79,21 +81,21 @@ c------------------------------------------------------------------------
          do i=nenl+1,nshl
             shape(:,i) = sgn(:,i) * shp(i,intp)
             do j=1,3
-               shdrv(:,j,i) = shgl(j,i,intp)*sgn(:,i) 
+               shdrv(:,j,i) = shgl(j,i,intp)*sgn(:,i)
             enddo
          enddo
       endif
-      
-      return 
+
+      return
       end
-      
+
       subroutine getbnodes(lnode)
 c------------------------------------------------------------------------
-c     compute the higher order modes that lie on the boundary of the 
+c     compute the higher order modes that lie on the boundary of the
 c     element.
 c------------------------------------------------------------------------
       include "common.h"
-      
+
       dimension lnode(27)
 
 c
@@ -128,13 +130,13 @@ c
                lnode(nenbl+n) = 8+n
             enddo
          endif
-         
+
          if( ipord > 3) then
             nfm = (ipord-2)*(ipord-3)/2
             do n=1,nfm
                lnode(4+4*nem+n) = 8+12*nem+n
             enddo
-         endif         
+         endif
 c
 c
 c.... This renumbers the boundary nodes for a wedge element when the
@@ -147,7 +149,7 @@ c
          enddo
 c
 c     Need to implement for cubic, this valid only for ipord=2
-c 
+c
          if( ipord>1 ) then
             nem = ipord-1
             do n=1,3*nem
@@ -162,9 +164,9 @@ c
          lnode(2) = 4
          lnode(3) = 5
          lnode(4) = 2
-c$$$c     
+c$$$c
 c$$$c     Need to implement for cubic, this valid only for ipord=2
-c$$$c     
+c$$$c
 c$$$         if( ipord > 1) then
 c$$$            lnode(5) = 9
 c$$$            lnode(6) = 15
@@ -174,8 +176,8 @@ c$$$               nem = ipord -1
 c$$$               do n=1,4*nem
 c$$$                  lnode(nenbl+n) = 6+n
 c$$$               enddo
-c$$$         endif         
-c     
+c$$$         endif
+c
 c     Boundary quad of pyramid element
 c
       else if(lcsyst .eq. 5) then
@@ -185,7 +187,7 @@ c
          lnode(4) = 4
 c$$$  c
 c$$$  c     Need to implement for cubic, this valid only for ipord=2
-c$$$  c          
+c$$$  c
 c$$$            if( ipord > 1) then
 c$$$               lnode(5) = 9
 c$$$               lnode(6) = 15
@@ -195,8 +197,8 @@ c$$$               nem = ipord -1
 c$$$               do n=1,4*nem
 c$$$                  lnode(nenbl+n) = 6+n
 c$$$               enddo
-c$$$            endif         
-c     
+c$$$            endif
+c
 c     Boundary triangle of pyramid element
 c
       else if(lcsyst .eq. 6) then
@@ -205,7 +207,7 @@ c
          lnode(3) = 2
 c$$$c
 c$$$c     Need to implement for cubic, this valid only for ipord=2
-c$$$c          
+c$$$c
 c$$$            if( ipord > 1) then
 c$$$               lnode(5) = 9
 c$$$               lnode(6) = 15
@@ -215,8 +217,8 @@ c$$$               nem = ipord -1
 c$$$               do n=1,4*nem
 c$$$                  lnode(nenbl+n) = 6+n
 c$$$               enddo
-c$$$            endif         
-c     
+c$$$            endif
+c
 c.... other element types need to be implemented
 c
       else
@@ -224,10 +226,10 @@ c
      &        ,lcsyst
          stop
       endif
-      
-      return 
+
+      return
       end
-      
+
 c-----------------------------------------------------------------------
 c
 c  Evaluate coefficient vector at its interpolation points
@@ -237,13 +239,13 @@ c-----------------------------------------------------------------------
 
       use     pointer_data
       include "common.h"
-      
+
       integer nvars, npts, nHits(nshg)
-      
+
       real*8  ycoeff(nshg,ndof),   yvals(nshg,nvars),
      &        shp(nshl,npts),      shgl(nsd,nshl,npts),
      &        intpnt(3,npts),      x(numnp,nsd)
-      
+
       real*8, allocatable :: ycl(:,:,:)
       real*8, allocatable :: xl(:,:,:)
       real*8, allocatable :: yvl(:,:,:)
@@ -267,29 +269,29 @@ c
          nenl   = lcblk(5,iblk) ! no. of vertices per element
          nshl   = lcblk(10,iblk)
          ndofl  = lcblk(8,iblk)
-         npro   = lcblk(1,iblk+1) - iel 
+         npro   = lcblk(1,iblk+1) - iel
 
          allocate ( ycl(npro,nshl,ndof ) )
          allocate ( yvl(npro,nshl,nvars) )
          allocate ( xl(npro,nenl,nsd   ) )
          allocate ( sgn(npro,nshl)       )
-         
+
          call getsgn(mien(iblk)%p,sgn)
-         
+
          call localy( ycoeff, ycl, mien(iblk)%p, ndof,  'gather  ')
          call localx( x,      xl,  mien(iblk)%p, nsd,   'gather  ')
 
-         call eval  ( xl,       ycl,      yvl,      
-     &                shp,      shgl,     sgn,      
+         call eval  ( xl,       ycl,      yvl,
+     &                shp,      shgl,     sgn,
      &                nvars,    npts    )
 
 c
 c.... average coefficients since stresses may be discontinuous
-c         
-         call localSum( yvals,    yvl,    mien(iblk)%p,  
-     &                  nHits,    nVars)  
-         
-         
+c
+         call localSum( yvals,    yvl,    mien(iblk)%p,
+     &                  nHits,    nVars)
+
+
          deallocate ( ycl )
          deallocate ( yvl )
          deallocate ( sgn )
@@ -305,7 +307,7 @@ c
             yvals(i,j) = yvals(i,j)/nHits(i) !(real(nHits(i),8))
          enddo
       enddo
-      
+
       return
       end
 
@@ -314,12 +316,12 @@ c
 c  evaluate in element coordinate system
 c
 c-----------------------------------------------------------------------
-      subroutine eval( xl,      ycl,     yvl,     
+      subroutine eval( xl,      ycl,     yvl,
      &                 shp,     shgl,    sgn,
-     &                 nvars,   npts ) 
-      
+     &                 nvars,   npts )
+
       include "common.h"
-      
+
       integer nvars
 c
       real*8  ycl(npro,nshl,ndof),   yvl(npro,nshl,nvars),
@@ -328,15 +330,15 @@ c
      &        shgl(nsd,nshl,npts),   xl(npro,nenl,nsd),
      &        shg(npro,nshl,nsd),    gradV(npro,nsd,nsd),
      &        dxidx(npro,nsd,nsd),   tmp(npro), wtmp
-      
+
       yvl = zero
 c
 c.... loop over interpolation points
 c
       do intp = 1, npts
-         call getshp(shp,          shgl,      sgn, 
+         call getshp(shp,          shgl,      sgn,
      &               shape,        shdrv)
-      
+
 c
 c.... pressure and velocity
 c
@@ -348,7 +350,7 @@ c
 c
 c.... viscous stress
 c
-         call e3metric( xl,         shdrv,      dxidx,  
+         call e3metric( xl,         shdrv,      dxidx,
      &                  shg,        tmp)
 
          gradV = zero
@@ -356,18 +358,18 @@ c
             gradV(:,1,1) = gradV(:,1,1) + shg(:,n,1) * ycl(:,n,2)
             gradV(:,2,1) = gradV(:,2,1) + shg(:,n,1) * ycl(:,n,3)
             gradV(:,3,1) = gradV(:,3,1) + shg(:,n,1) * ycl(:,n,4)
-c     
+c
             gradV(:,1,2) = gradV(:,1,2) + shg(:,n,2) * ycl(:,n,2)
             gradV(:,2,2) = gradV(:,2,2) + shg(:,n,2) * ycl(:,n,3)
             gradV(:,3,2) = gradV(:,3,2) + shg(:,n,2) * ycl(:,n,4)
-c     
+c
             gradV(:,1,3) = gradV(:,1,3) + shg(:,n,3) * ycl(:,n,2)
             gradV(:,2,3) = gradV(:,2,3) + shg(:,n,3) * ycl(:,n,3)
             gradV(:,3,3) = gradV(:,3,3) + shg(:,n,3) * ycl(:,n,4)
          enddo
 
          rmu = datmat(1,2,1)
-            
+
          yvl(:,intp,6 ) = two * rmu * gradV(:,1,1)
          yvl(:,intp,7 ) = two * rmu * gradV(:,2,2)
          yvl(:,intp,8 ) = two * rmu * gradV(:,3,3)
@@ -378,11 +380,8 @@ c
 
 c
 c.... loop over interpolation points
-c         
+c
       enddo
-      
+
       return
       end
-
-         
-

@@ -1,5 +1,5 @@
-      subroutine AsBMFG (u,       y,       ac,      x,       
-     &                   shpb,    shglb,
+      subroutine AsBMFG (u,       y,       ac,      x,
+     &                   shpb,    shglb, C,
      &                   ienb,    materb,  iBCB,    BCB,
      &                   res,     xKebe)
 c
@@ -18,18 +18,19 @@ c
 c
         dimension y(nshg,ndofl),           x(numnp,nsd),
      &            ac(nshg,ndofl),          u(nshg,nsd),
-     &            shpb(nshl,ngaussb),
-     &            shglb(nsd,nshl,ngaussb),         
+     &            shp(nshl,ngaussb),
+     &            shgl(nsd,nshl,ngaussb),
+     &            C(num_elem_1D, ipord+1,ipord+1)
      &            ienb(npro,nshl),         materb(npro),
      &            iBCB(npro,ndiBCB),       BCB(npro,nshlb,ndBCB),
-     &            res(nshg,nflow),        dwl(npro,nenl)        
+     &            res(nshg,nflow),        dwl(npro,nenl)
 c
         dimension yl(npro,nshl,ndofl),     xlb(npro,nenl,nsd),
      &            rl(npro,nshl,nflow),     sgn(npro,nshl),
      &            ul(npro,nshl,nsd),       acl(npro,nshl,ndofl)
 c
-        dimension xKebe(npro,9,nshl,nshl) 
-     
+        dimension xKebe(npro,9,nshl,nshl)
+
 c
 c.... get the matrix of mode signs for the hierarchic basis functions
 c
@@ -52,7 +53,7 @@ c.... zero the matrices if they are being recalculated
 c
        if (lhs. eq. 1)  then
            xKebe = zero
-        endif   
+        endif
 
 c
 c.... get the boundary element residuals
@@ -61,20 +62,20 @@ c
 c
 c.... 3D
 c
-        call e3b  (ul,      yl,      acl,     iBCB,    BCB,     
-     &             shpb,    shglb,
+        call e3b  (ul,      yl,      acl,     iBCB,    BCB,
+     &             shp,    shgl,
      &             xlb,     rl,      sgn,     dwl,     xKebe)
 c
 c.... assemble the residual and the modified residual
 c
         call local (res,    rl,     ienb,   nflow,  'scatter ')
 
-c     
+c
 c.... end
 c
         return
         end
- 
+
 
 c
 c----------------------------------------------------------------------
@@ -92,10 +93,10 @@ c
 c
         dimension y(nshg,ndofl),           x(numnp,nsd),
      &            shpb(nshl,*),
-     &            shglb(nsd,nshl,*),         
+     &            shglb(nsd,nshl,*),
      &            ienb(npro,nshl),         materb(npro),
      &            iBCB(npro,ndiBCB),       BCB(npro,nshlb,ndBCB),
-     &            res(nshg)         
+     &            res(nshg)
 c
         dimension yl(npro,nshl,ndofl),     xlb(npro,nenl,nsd),
      &            rl(npro,nshl),     sgn(npro,nshl)
@@ -125,10 +126,8 @@ c
 c.... assemble the residual and the modified residual
 c
         call local (res,    rl,     ienb,   1,  'scatter ')
-c     
+c
 c.... end
 c
         return
         end
-
-

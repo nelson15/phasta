@@ -1,10 +1,10 @@
-        subroutine e3b (ul,      yl,      acl,     iBCB,    BCB,     
-     &                  shpb,    shglb,
+        subroutine e3b (ul,      yl,      acl,     iBCB,    BCB,
+     &                  shp,    shgl, C,
      &                  xlb,     rl,      sgn,     dwl,     xKebe)
 c
 c----------------------------------------------------------------------
 c
-c   This routine calculates the 3D RHS residual of the fluid boundary 
+c   This routine calculates the 3D RHS residual of the fluid boundary
 c   elements.
 c
 c input:
@@ -17,15 +17,15 @@ c                  pressure   flux * 2
 c                  viscous    flux * 4
 c                  heat       flux * 8
 c                  turbulence wall * 16
-c                  scalarI   flux  * 16*2^I 
+c                  scalarI   flux  * 16*2^I
 c                  (where I is the scalar number)
 c
 c      iBCB(:,2) is the srfID given by the user in MGI that we will
 c                collect integrated fluxes for.
 c
 c  BCB    (npro,nshlb,ndBCB)    : Boundary Condition values
-c                                  BCB (1) : mass flux 
-c                                  BCB (2) : pressure 
+c                                  BCB (1) : mass flux
+c                                  BCB (2) : pressure
 c                                  BCB (3) : viscous flux in x1-direc.
 c                                  BCB (4) : viscous flux in x2-direc.
 c                                  BCB (5) : viscous flux in x3-direc.
@@ -37,9 +37,9 @@ c
 c output:
 c  rl     (npro,nshl,nflow)      : element residual
 c
-c Note: Always the first side of the element is on the boundary.  
-c       However, note that for higher-order elements the nodes on 
-c       the boundary side are not the first nshlb nodes, see the 
+c Note: Always the first side of the element is on the boundary.
+c       However, note that for higher-order elements the nodes on
+c       the boundary side are not the first nshlb nodes, see the
 c       array mnodeb.
 c
 c
@@ -53,7 +53,7 @@ c
 c
         dimension yl(npro,nshl,ndof),          iBCB(npro,ndiBCB),
      &            BCB(npro,nshlb,ndBCB),       shpb(nshl,ngaussb),
-     &            shglb(nsd,nshl,ngaussb),           
+     &            shglb(nsd,nshl,ngaussb),     C(num_elem_1D, ipord+1,ipord+1),
      &            xlb(npro,nenl,nsd),          ul(npro,nshl,nsd),
      &            acl(npro,nshl,ndof),
      &            rl(npro,nshl,nflow)
@@ -94,21 +94,21 @@ c
         else
            ngaussb = nintb(lcsyst)
         endif
-        
+
         do intp = 1, ngaussb
 c
 c.... get the hierarchic shape functions at this int point
 c
-        call getshp(shpb,        shglb,        sgn, 
+        call getshp(shp,        shgl,        C,  sgn, 
      &              shape,       shdrv)
 c
 c     NOTE I DID NOT PASS THE lnode down.  It is not needed
 c     since the shape functions are zero on the boundary
 c
-c     Note that xmudmi is not calculated at these quadrature 
+c     Note that xmudmi is not calculated at these quadrature
 c     points so you give it a zero.  This has implications.
-c     the traction calculated by this approach will include 
-c     molecular stresses ONLY.  This is why we will use the 
+c     the traction calculated by this approach will include
+c     molecular stresses ONLY.  This is why we will use the
 c     consistent flux method to obtain the forces when doing
 c     effective viscosity wall modeling.  When doing slip velocity
 c     this is not a problem since the traction is given from the
@@ -122,24 +122,24 @@ c
 c
 c.... calculate the integraton variables
 c
-        call e3bvar (yl,              acl,             ul,              
+        call e3bvar (yl,              acl,             ul,
      &               shape,
      &               shdrv,           xlb,
      &               lnode,           WdetJb,
-     &               bnorm,           pres,            
+     &               bnorm,           pres,
      &               u1,              u2,              u3,
      &               rmu,             unm,
      &               tau1n,           tau2n,           tau3n,
-     &               vdot,            rlKwall,         
+     &               vdot,            rlKwall,
      &               xKebe,           rKwall_glob)
-        
-c        
+
+c
 c.... -----------------> boundary conditions <-------------------
 c
         do iel = 1, npro
 c
 c  if we have a nonzero value then
-c  calculate the fluxes through this surface 
+c  calculate the fluxes through this surface
 c
            iface = abs(iBCB(iel,2))
 !MR CHANGE
@@ -155,13 +155,13 @@ c
               flxID(2,iface) =  flxID(2,iface) - WdetJb(iel) * unm(iel)
               flxID(3,iface) = flxID(3,iface)
      &                   - ( tau1n(iel) - bnorm(iel,1)*pres(iel))
-     &                   * WdetJb(iel) 
+     &                   * WdetJb(iel)
               flxID(4,iface) = flxID(4,iface)
      &                   - ( tau2n(iel) - bnorm(iel,2)*pres(iel))
-     &                   * WdetJb(iel) 
+     &                   * WdetJb(iel)
               flxID(5,iface) = flxID(5,iface)
      &                   - ( tau3n(iel) - bnorm(iel,3)*pres(iel))
-     &                   * WdetJb(iel) 
+     &                   * WdetJb(iel)
 
            endif
 c
@@ -173,35 +173,35 @@ c
               unm(iel)  = zero
               do n = 1, nshlb
                  nodlcl = lnode(n)
-                 unm(iel) = unm(iel) 
+                 unm(iel) = unm(iel)
      &                    + shape(iel,nodlcl) * BCB(iel,n,1)
               enddo
            endif
 c
 c.... pressure
-c        
+c
            if (btest(iBCB(iel,1),1)) then
               pres(iel) = zero
               do n = 1, nshlb
                  nodlcl = lnode(n)
-                 pres(iel) = pres(iel) 
+                 pres(iel) = pres(iel)
      &                     + shape(iel,nodlcl) * BCB(iel,n,2)
               enddo
            endif
 c
 c.... viscous flux
-c        
+c
            if (btest(iBCB(iel,1),2)) then
               tau1n(iel) = zero
               tau2n(iel) = zero
               tau3n(iel) = zero
               do n = 1, nshlb
                  nodlcl = lnode(n)
-                 tau1n(iel) = tau1n(iel) 
+                 tau1n(iel) = tau1n(iel)
      &                      + shape(iel,nodlcl)*BCB(iel,n,3)
-                 tau2n(iel) = tau2n(iel) 
+                 tau2n(iel) = tau2n(iel)
      &                      + shape(iel,nodlcl)*BCB(iel,n,4)
-                 tau3n(iel) = tau3n(iel) 
+                 tau3n(iel) = tau3n(iel)
      &                      + shape(iel,nodlcl)*BCB(iel,n,5)
               enddo
            endif
@@ -210,11 +210,11 @@ c
 c.... turbulence wall (as a way of checking for deformable wall stiffness)
 c
            if (btest(iBCB(iel,1),4)) then
-              rlKwall(iel,:,:) = rlKwall(iel,:,:) / ngaussb ! divide by number of gauss points 
+              rlKwall(iel,:,:) = rlKwall(iel,:,:) / ngaussb ! divide by number of gauss points
               pres(iel) = zero                              ! to avoid the gauss point loop
               tau1n(iel) = zero                             ! and make the traction contribution
               tau2n(iel) = zero                             ! zero
-              tau3n(iel) = zero                              
+              tau3n(iel) = zero
            else
               rlKwall(iel,:,:) = zero                       ! this is not a deformable element
               vdot(iel,:) = zero
@@ -232,7 +232,7 @@ c$$$c     in the computataion (could be done MUCH more efficiently!)--->
                                                                   !comment should read as for the consistent flux calculation rather than boundary forces
 c$$$c
         if (ires .eq. 2) then
-           do iel = 1, npro 
+           do iel = 1, npro
               if (nsrflist(iBCB(iel,2)) .ne. 0) then
                  unm(iel) = zero
                  tau1n(iel) = zero
@@ -273,13 +273,13 @@ c
         rNa(:,4) =  WdetJb * unm
 c
         if(iconvflow.eq.1) then     ! conservative form was integrated
-                                    ! by parts and has a convective 
+                                    ! by parts and has a convective
                                     ! boundary integral
 c
 c.... assemble the contributions
 c
            rou=rho*unm
-           rNa(:,1) = rNa(:,1) + WdetJb * rou * u1 
+           rNa(:,1) = rNa(:,1) + WdetJb * rou * u1
            rNa(:,2) = rNa(:,2) + WdetJb * rou * u2
            rNa(:,3) = rNa(:,3) + WdetJb * rou * u3
         endif
@@ -301,15 +301,15 @@ c
            rl(:,1,1) = rl(:,1,1) - rlKwall(:,1,1)
            rl(:,1,2) = rl(:,1,2) - rlKwall(:,1,2)
            rl(:,1,3) = rl(:,1,3) - rlKwall(:,1,3)
-           
+
            rl(:,2,1) = rl(:,2,1) - rlKwall(:,2,1)
            rl(:,2,2) = rl(:,2,2) - rlKwall(:,2,2)
            rl(:,2,3) = rl(:,2,3) - rlKwall(:,2,3)
-        
+
            rl(:,3,1) = rl(:,3,1) - rlKwall(:,3,1)
            rl(:,3,2) = rl(:,3,2) - rlKwall(:,3,2)
            rl(:,3,3) = rl(:,3,3) - rlKwall(:,3,3)
-        endif 
+        endif
 c
 c.... -------------------->  Aerodynamic Forces  <---------------------
 c
@@ -328,7 +328,7 @@ c
               tau3n = zero
            endwhere
 c
-c Note that the sign has changed from the compressible code to 
+c Note that the sign has changed from the compressible code to
 c make it consistent with the way the bflux calculates the forces
 c Note also that Hflux has moved to e3btemp
 c
@@ -343,10 +343,10 @@ c.... end of integration loop
 c
         enddo
         if(ideformwall.eq.1) then
-c     
+c
 c.... -----> Wall Stiffness and Mass matrices for implicit LHS  <-----------
-c     
-c.... Now we simply have to add the stiffness contribution in rKwall_glob to 
+c
+c.... Now we simply have to add the stiffness contribution in rKwall_glob to
 c.... the mass contribution already contained in xKebe
 
 c.... this line is going to destroy the mass matrix contribution
@@ -377,8 +377,8 @@ c*********************************************************************
 c
         dimension yl(npro,nshl,ndof),          iBCB(npro,ndiBCB),
      &            BCB(npro,nshlb,ndBCB),       shpb(nshl,*),
-     &            shglb(nsd,nshl,*),           
-     &            xlb(npro,nenl,nsd),          
+     &            shglb(nsd,nshl,*),
+     &            xlb(npro,nenl,nsd),
      &            rl(npro,nshl)
 c
         real*8    WdetJb(npro),                bnorm(npro,nsd)
@@ -404,7 +404,7 @@ c
 c
 c.... get the hierarchic shape functions at this int point
 c
-        call getshp(shpb,        shglb,        sgn, 
+        call getshp(shpb,        shglb,        sgn,
      &              shape,       shdrv)
 c
 c.... calculate the integraton variables
@@ -412,14 +412,14 @@ c
         call e3bvarSclr (yl,          shdrv,   xlb,
      &                   shape,       WdetJb,  bnorm,
      &                   flux,        dwl )
-c        
+c
 c.... -----------------> boundary conditions <-------------------
 c
 
 c
 c.... heat or scalar  flux
-c     
-        if(isclr.eq.0) then 
+c
+        if(isclr.eq.0) then
            iwalljump=0
         else
            iwalljump=1  !turb wall between heat and scalar flux..jump over
@@ -429,11 +429,11 @@ c
         do iel=1, npro
 c
 c  if we have a nonzero value then
-c  calculate the fluxes through this surface 
+c  calculate the fluxes through this surface
 c
            if (nsrflist(iBCB(iel,2)).ne.0 .and. ires.ne.2) then
               iface = abs(iBCB(iel,2))
-              flxID(ibb,iface) =  flxID(ibb,iface) 
+              flxID(ibb,iface) =  flxID(ibb,iface)
      &                          - WdetJb(iel) * flux(iel)
            endif
 
@@ -441,9 +441,9 @@ c
               flux(iel) = zero
               do n = 1, nshlb
                  nodlcl = lnode(n)
-                 flux(iel) = flux(iel) 
+                 flux(iel) = flux(iel)
      &                     + shape(iel,nodlcl) * BCB(iel,n,ibb)
-              enddo           
+              enddo
            endif
         enddo
 c
@@ -457,7 +457,7 @@ c.... add the flux to the residual
 c
         do n = 1, nshlb
            nodlcl = lnode(n)
- 
+
            rl(:,nodlcl) = rl(:,nodlcl) - shape(:,nodlcl) * rNa(:)
         enddo
 c
@@ -480,4 +480,3 @@ c.... return
 c
         return
         end
-  

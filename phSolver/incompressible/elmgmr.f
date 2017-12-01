@@ -290,8 +290,8 @@ c
 
           call AsBMFG (u,                       y,
      &                 ac,                      x,
-     &                 tmpshpb,
-     &                 tmpshglb,
+     &                 shp,
+     &                 shgl, C,
      &                 mienb(iblk)%p,           mmatb(iblk)%p,
      &                 miBCB(iblk)%p,           mBCB(iblk)%p,
      &                 res,                     xKebe)
