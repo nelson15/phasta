@@ -1,11 +1,11 @@
         subroutine e3 (yl,      acl,     dwl,     shp,
-     &                 shgl,    xl,      rl,      ql,
-     &                 xKebe,   xGoC,    xmudmi,  sgn, 
+     &                 shgl,   C,  xl,      rl,      ql,
+     &                 xKebe,   xGoC,    xmudmi,  sgn,
      &                 rerrl, rlsl)
-c                                                                      
+c
 c----------------------------------------------------------------------
 c
-c     This routine calculates the residual and tangent matrix for the 
+c     This routine calculates the residual and tangent matrix for the
 c     UBar formulation of the incompressible Navier Stokes equations.
 c
 c
@@ -38,11 +38,12 @@ c
         include "common.h"
 c
         dimension yl(npro,nshl,ndof),
-     &            acl(npro,nshl,ndof),       
+     &            acl(npro,nshl,ndof),
      &            shp(nshl,ngauss),       shgl(nsd,nshl,ngauss),
+     &            C(num_elem_1D, ipord+1,ipord+1),
      &            xl(npro,nenl,nsd),      dwl(npro,nenl),
      &            rl(npro,nshl,nflow),     ql(npro,nshl,idflx)
-c      
+c
 
         dimension xKebe(npro,9,nshl,nshl), xGoC(npro,4,nshl,nshl)
 c
@@ -50,12 +51,12 @@ c.... local declarations
 c
         dimension g1yi(npro,ndof),        g2yi(npro,ndof),
      &            g3yi(npro,ndof),        shg(npro,nshl,nsd),
-     &            aci(npro,3),            dxidx(npro,nsd,nsd),       
+     &            aci(npro,3),            dxidx(npro,nsd,nsd),
      &            WdetJ(npro),            rho(npro),
      &            pres(npro),             u1(npro),
      &            u2(npro),               u3(npro),
      &            rLui(npro,nsd),         uBar(npro,nsd),
-     &            xmudmi(npro,ngauss),     sgn(npro,nshl), 
+     &            xmudmi(npro,ngauss),     sgn(npro,nshl),
      &            shpfun(npro,nshl),      shdrv(npro,nsd,nshl),
      &            rmu(npro),              tauC(npro),
      &            tauM(npro),             tauBar(npro),
@@ -67,13 +68,13 @@ c
         integer   aa
 
 c
-c     
+c
 c.... local reconstruction of diffusive flux vector for quadratics
 c     or greater but NOT for bflux since local mass was not mapped
 c
         if ( idiff==2 .and. ires .eq. 1 ) then
-           call e3ql (yl,        dwl,       shp,       shgl, 
-     &                xl,        ql,        xmudmi, 
+           call e3ql (yl,        dwl,       shp,       shgl, C,
+     &                xl,        ql,        xmudmi,
      &                sgn)
         endif
 c
@@ -86,7 +87,7 @@ c
 c
 c.... get the hierarchic shape functions at this int point
 c
-        call getshp(shp,          shgl,      sgn, 
+        call getshp(shp,          shgl,      C,   sgn, 
      &              shpfun,       shdrv)
 c
 c.... get necessary fluid properties (including eddy viscosity)
@@ -97,20 +98,20 @@ c.... calculate the integration variables
 c
         call e3ivar (yl,          acl,       shpfun,
      &               shdrv,       xl,
-     &               aci,         g1yi,      g2yi,    
-     &               g3yi,        shg,       dxidx,   
-     &               WdetJ,       rho,       pres, 
-     &               u1,          u2,        u3,              
+     &               aci,         g1yi,      g2yi,
+     &               g3yi,        shg,       dxidx,
+     &               WdetJ,       rho,       pres,
+     &               u1,          u2,        u3,
      &               ql,          rLui,      src,
      &               rerrl,       rlsl,      rlsli,
-     &               dwl) 
+     &               dwl)
 c
 c.... compute the stabilization terms
 c
         call e3stab (rho,          u1,       u2,
-     &               u3,           dxidx,    rLui,   
-     &               rmu,          tauC,     tauM,   
-     &               tauBar,       uBar )  
+     &               u3,           dxidx,    rLui,
+     &               rmu,          tauC,     tauM,
+     &               tauBar,       uBar )
 c
 c.... compute the residual contribution at this integration point
 c
@@ -162,12 +163,12 @@ c###################################################################
 
       subroutine e3Sclr (yl,      acl,     shp,
      &                     shgl,    xl,      dwl,
-     &                     rl,      ql,      xSebe,   
+     &                     rl,      ql,      xSebe,
      &                     sgn,     xmudmi)
-c                                                                      
+c
 c----------------------------------------------------------------------
 c
-c     This routine calculates the residual and tangent matrix for the 
+c     This routine calculates the residual and tangent matrix for the
 c     advection - diffusion equation for scalar.
 c
 c K. E. Jansen,   Winter 1999.   (advective form formulation)
@@ -176,9 +177,9 @@ c----------------------------------------------------------------------
 c
       include "common.h"
 c
-      real*8    yl(npro,nshl,ndof),     acl(npro,nshl,ndof),       
+      real*8    yl(npro,nshl,ndof),     acl(npro,nshl,ndof),
      &            shp(nshl,ngauss),       shgl(nsd,nshl,ngauss),
-     &            xl(npro,nenl,nsd),      rl(npro,nshl),          
+     &            xl(npro,nenl,nsd),      rl(npro,nshl),
      &            ql(npro,nshl,nsd),      xSebe(npro,nshl,nshl),
      &            dwl(npro,nshl)
 c
@@ -186,9 +187,9 @@ c.... local declarations
 c
       real*8    gradS(npro,nsd),        shg(npro,nshl,nsd),
      &            Sdot(npro),             Sclr(npro),
-     &            dxidx(npro,nsd,nsd),    WdetJ(npro),      
+     &            dxidx(npro,nsd,nsd),    WdetJ(npro),
      &            u1(npro),     u2(npro), u3(npro),
-     &            sgn(npro,nshl),         shpfun(npro,nshl),       
+     &            sgn(npro,nshl),         shpfun(npro,nshl),
      &            shdrv(npro,nsd,nshl),   rLS(npro),
      &            tauS(npro),             diffus(npro),
      &            srcL(npro),             srcR(npro),
@@ -198,13 +199,13 @@ c
 c.... Source terms sometimes take the form (beta_i)*(phi,_i).  Since
 c     the convective term has (u_i)*(phi,_i), it is useful to treat
 c     beta_i as a "correction" to the velocity.  In calculating the
-c     stabilization terms, the new "modified" velocity (u_i-beta_i) is 
+c     stabilization terms, the new "modified" velocity (u_i-beta_i) is
 c     then used in place of the pure velocity for stabilization terms,
 c     and the source term sneaks into the RHS and LHS.
       real*8    uMod(npro,nsd), srcRat(npro), xmudmi(npro,ngauss)
 c
       integer   aa, b
-c     
+c
 c.... local reconstruction of diffusive flux vector
 c
         if ( idiff==2 ) then
@@ -219,7 +220,7 @@ c
 c
 c.... get the hierarchic shape functions at this int point
 c
-        call getshp(shp,          shgl,      sgn, 
+        call getshp(shp,          shgl,      sgn,
      &              shpfun,        shdrv)
 c
 c.... get necessary fluid properties
@@ -231,8 +232,8 @@ c
         call e3ivarSclr(yl,          acl,       shpfun,
      &                  shdrv,       xl,        xmudmi,
      &                  Sclr,        Sdot,      gradS,
-     &                  shg,         dxidx,     WdetJ,       
-     &                  u1,          u2,        u3,              
+     &                  shg,         dxidx,     WdetJ,
+     &                  u1,          u2,        u3,
      &                  ql,          rLS,       SrcR,
      &                  SrcL,        uMod,      dwl,
      &                  diffus,      srcRat)
@@ -241,14 +242,14 @@ c
 c
 c.... compute the stabilization terms
 c
-        call e3StabSclr (uMod,    dxidx,   tauS, 
+        call e3StabSclr (uMod,    dxidx,   tauS,
      &                   diffus,  srcR,    giju,
      &                   srcRat)
 c
 c... computing the DC factor for the discontinuity capturing
 c
         if (idcsclr(1) .ne. 0) then
-           if ((idcsclr(2).eq.1 .and. isclr.eq.1) .or. 
+           if ((idcsclr(2).eq.1 .and. isclr.eq.1) .or.
      &          (idcsclr(2).eq.2 .and. isclr.eq.2)) then ! scalar with dc
 c
               call e3dcSclr ( gradS,    giju,     gGradS,
@@ -260,17 +261,17 @@ c
 c.... compute the residual contribution at this integration point
 c
         call e3ResSclr ( uMod,      gGradS,
-     &                   Sclr,      Sdot,       gradS,  
+     &                   Sclr,      Sdot,       gradS,
      &                   WdetJ,     rLS,        tauS,
      &                   shpfun,    shg,        srcR,
-     &                   diffus, 
+     &                   diffus,
      &                   rl )
 c
 c.... compute the tangent matrix contribution
 c
         if (lhs .eq. 1) then
            call e3LHSSclr ( uMod,      giju,       dcFct,
-     &                      Sclr,      Sdot,       gradS,  
+     &                      Sclr,      Sdot,       gradS,
      &                      WdetJ,     rLS,        tauS,
      &                      shpfun,    shg,        srcL,
      &                      diffus,
