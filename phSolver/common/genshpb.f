@@ -1,4 +1,4 @@
-      subroutine genshpb (shpb,    shglb, nshpb, nblk)  
+      subroutine genshpb (shpb,    shglb, nshpb, nblk)
 c
 c----------------------------------------------------------------------
 c
@@ -10,14 +10,14 @@ c----------------------------------------------------------------------
 c
       include "common.h"
 c
-      dimension shpb(MAXTOP,maxsh,MAXQPT), 
+      dimension shpb(MAXTOP,maxsh,MAXQPT),
      &          shglb(MAXTOP,nsd,maxsh,MAXQPT)
 c
 c.... loop through element blocks
 c
       do iblk = 1, nblk
 c
-c.... get coord. system and element type 
+c.... get coord. system and element type
 c
 
          lcsyst = lcblkb(3,iblk)
@@ -27,46 +27,46 @@ c
          select case ( lcsyst )
          case ( 1 )             ! tets
             nshl=lcblkb(9,iblk)
-            do i=1,nintb(lcsyst)  
+            do i=1,nintb(lcsyst)
                call shpTet(ipord,Qptb(1,1:3,i),shpb(1,:,i),
      &              shglb(1,:,:,i))
             enddo
-            shglb(1,:,1:nshl,1:nintb(lcsyst)) = 
+            shglb(1,:,1:nshl,1:nintb(lcsyst)) =
      &           shglb(1,:,1:nshl,1:nintb(lcsyst))/two
-c     
+c
          case ( 2 )             ! hexes
-c     
+c
             do i=1,nintb(lcsyst)
                call shpHex  (ipord, Qptb(2,1:3,i),shpb(2,:,i),
      &              shglb(2,:,:,i))
             enddo
-c     
+c
          case ( 3 )             ! wedges with tri bd face
-            
+
             do i=1,nintb(lcsyst)
                call shp6w (ipord,Qptb(3,1:3,i),
      &              shpb(3,:,i),shglb(3,:,:,i))
             enddo
-c     
+c
          case ( 4 )             ! wedges with quad bd face
-c     
+c
             do i=1,nintb(lcsyst)
                call shp6w (ipord,Qptb(4,1:3,i),
      &              shpb(4,:,i),shglb(4,:,:,i))
             enddo
          case ( 5 )             ! pyramids with quad bd face
-c     
+c
             do i=1,nintb(lcsyst)
                call shppyr (ipord,Qptb(5,1:3,i),
      &              shpb(5,:,i),shglb(5,:,:,i))
             enddo
 c
-         case ( 6 )             ! pyramids with quad bd face
-c     
-            do i=1,nintb(lcsyst)
-               call shppyr (ipord,Qptb(6,1:3,i),
-     &              shpb(6,:,i),shglb(6,:,:,i))
-            enddo
+         case ( 6 )             ! IGA hex elements
+c
+C            do i=1,nintb(lcsyst)
+C               call shphexIGA (ipord,Qptb(6,1:3,i),
+C     &              shpb(6,:,i),shglb(6,:,:,i))
+C            enddo
 c
 c.... nonexistent element
 c
