@@ -1,13 +1,13 @@
       subroutine SolFlow(y,          ac,         u,
      &                   yold,       acold,      uold,
      &                   x,          iBC,
-     &                   BC,         res,        iper,       
-     &                   ilwork,     shp,        shgl, 
-     &                   shpb,       shglb,      rowp,     
-     &                   colm,       
+     &                   BC,         res,        iper,
+     &                   ilwork,     shp,        shgl, C,
+     &                   shpb,       shglb,      rowp,
+     &                   colm,
      &                   solinc,     rerr,       tcorecp,
      &                   GradV,       sumtime
-#ifdef HAVE_SVLS     
+#ifdef HAVE_SVLS
      &                   ,svLS_lhs,  svLS_ls,   svLS_nFaces)
 #else
      &                   )
@@ -15,7 +15,7 @@
 c
 c----------------------------------------------------------------------
 c
-c This is the 2nd interface routine to the  linear equation 
+c This is the 2nd interface routine to the  linear equation
 c solver library that uses the CGP and GMRES methods.
 c
 c input:
@@ -45,15 +45,15 @@ c          |     E    | | dT | =  | Rtemp |
 c
 c     where
 c
-c      xKebe : K_ab = dRmom_a/du_b    xTe : E_ab = dRtemp_a/dT_b 
+c      xKebe : K_ab = dRmom_a/du_b    xTe : E_ab = dRtemp_a/dT_b
 c
 c              G_ab = dRmom_a/dp_b
 c      xGoC  :
-c              C_ab = dRcon_a/dp_b       
+c              C_ab = dRcon_a/dp_b
 c
 c              resf = Rmon Rcon       rest = Rtemp
 c
-c  
+c
 c Zdenek Johan,  Winter 1991.  (Fortran 90)
 c Juin Kim, Summer 1998. (Incompressible flow solver interface)
 c Alberto Figueroa.  CMM-FSI
@@ -61,37 +61,38 @@ c----------------------------------------------------------------------
 c
       use pointer_data
       use solvedata
-#ifdef AMG      
+#ifdef AMG
       use ramg_data
-#endif     
-        
+#endif
+
       include "common.h"
       include "mpif.h"
       include "auxmpi.h"
-#ifdef HAVE_SVLS      
+#ifdef HAVE_SVLS
         include "svLS.h"
-#endif        
+#endif
 C
       REAL*8                rdtmp
-C    
+C
 #ifdef HAVE_SVLS
       TYPE(svLS_lhsType), INTENT(INOUT) :: svLS_lhs
       TYPE(svLS_lsType), INTENT(INOUT) ::  svLS_ls
-#endif      
-       
+#endif
+
       real*8    y(nshg,ndof),             ac(nshg,ndof),
      &          yold(nshg,ndof),          acold(nshg,ndof),
      &          u(nshg,nsd),              uold(nshg,nsd),
      &          x(numnp,nsd),             BC(nshg,ndofBC),
      &          res(nshg,nflow),          tmpres(nshg,nflow),
-     &          flowDiag(nshg,4),         
-     &          sclrDiag(nshg,1),         
+     &          flowDiag(nshg,4),
+     &          sclrDiag(nshg,1),
      &          GradV(nshg,nsdsq)
 c
-      real*8    shp(MAXTOP,maxsh,MAXQPT),  
-     &          shgl(MAXTOP,nsd,maxsh,MAXQPT), 
+      real*8    shp(MAXTOP,maxsh,MAXQPT),
+     &          shgl(MAXTOP,nsd,maxsh,MAXQPT),
      &          shpb(MAXTOP,maxsh,MAXQPT),
-     &          shglb(MAXTOP,nsd,maxsh,MAXQPT) 
+     &          shglb(MAXTOP,nsd,maxsh,MAXQPT),
+     &          C(num_elem_1D, ipord+1,ipord+1)
 c
       integer   usr(100),                 eqnType,temp,
      &          rowp(nshg*nnz),           colm(nshg+1),
@@ -104,19 +105,19 @@ c
      &          solinc(nshg,ndof),        CGsol(nshg)
 
       real*8     tcorecp(2)
-      
+
       real*8    rerr(nshg,10),            rtmp(nshg,4),rtemp
-      
+
       real*8    msum(4),mval(4),cpusec(10)
       REAL*8 sumtime
-#ifdef HAVE_SVLS      
+#ifdef HAVE_SVLS
       INTEGER svLS_nFaces
-#endif      
+#endif
       INTEGER dof, i, j, k, l
       INTEGER, ALLOCATABLE :: incL(:)
       REAL*8, ALLOCATABLE :: faceRes(:), Res4(:,:), Val4(:,:)
 
-c     
+c
 c.... *******************>> Element Data Formation <<******************
 c
 c
@@ -124,15 +125,15 @@ c.... set the parameters for flux and surface tension calculations
 c
 c
         temp = npro
-        
 
-        idflx = 0 
+
+        idflx = 0
         if(idiff >= 1 )  idflx= (nflow-1) * nsd
         if (isurf == 1) idflx=nflow*nsd
 c.... compute solution at n+alpha
 c
       call itrYAlpha( uold,    yold,    acold,
-     &                u,       y,       ac,  
+     &                u,       y,       ac,
      &                uAlpha,  yAlpha,  acAlpha)
 
 c
@@ -143,10 +144,10 @@ c      call summary_start()
       impistat2=1
       telmcp1 = TMRC()
       call ElmGMR (uAlpha,    yAlpha,     acAlpha,    x,
-     &             shp,       shgl,       iBC,       
-     &             BC,        shpb,       shglb,
-     &             res,       iper,       ilwork,   
-     &             rowp,      colm,       lhsK,      
+     &             shp,       shgl,       iBC,
+     &             BC,        shpb,       shglb, C,
+     &             res,       iper,       ilwork,
+     &             rowp,      colm,       lhsK,
      &             lhsP,      rerr,       GradV   )
       telmcp2 = TMRC()
       impistat=0
@@ -156,7 +157,7 @@ c      call summary_stop()
 
             tmpres(:,:) = res(:,:)
             iblk = 1
-#ifdef HAVE_SVLS            
+#ifdef HAVE_SVLS
       IF (svLSFlag .EQ. 1) THEN
 
 c####################################################################
@@ -194,20 +195,20 @@ c####################################################################
             END DO
          END DO
       END DO
-      CALL svLS_SOLVE(svLS_lhs, svLS_ls, dof, Res4, Val4, incL, 
+      CALL svLS_SOLVE(svLS_lhs, svLS_ls, dof, Res4, Val4, incL,
      2   faceRes)
-      
+
       if(myrank.eq.master) write(*,*) 'svLS outer iterations', svLS_ls%RI%itr
       statsflow(1)=1.0*svLS_ls%GM%itr
       statsflow(4)=1.0*svLS_ls%CG%itr
       DO i=1, nshg
          solinc(i,1:dof) = Res4(1:dof,i)
       END DO
-      ENDIF 
+      ENDIF
 #endif
 
-#ifdef HAVE_LESLIB  
-      if(leslib.eq.1) then    
+#ifdef HAVE_LESLIB
+      if(leslib.eq.1) then
 c
 c.... lesSolve : main matrix solver
 c
@@ -218,7 +219,7 @@ c      call summary_start()
       impistat=1
       impistat2=1
       tlescp1 = TMRC()
-#ifdef AMG      
+#ifdef AMG
       ! Initial Time Profiling
       call cpu_time(cpusec(1))
       if (irun_amg_prec.gt.0) then
@@ -233,23 +234,23 @@ c      call summary_start()
         ramg_window = 1.0
         ramg_redo = 0
       endif
-      do while (ramg_flag.le.irun_amg_prec) 
+      do while (ramg_flag.le.irun_amg_prec)
       ! if smart solve, possible run solve twice
       ! restart only if meets plateau
-#endif      
-      
+#endif
+
 c
 c.... setup the linear algebra solver
 c
       rtmp = res(:,1:4)
       call usrNew ( usr,        eqnType,          aperm,
-     &              atemp,      rtmp,             solinc,          
-     &              flowDiag,   sclrDiag,         lesP,   
+     &              atemp,      rtmp,             solinc,
+     &              flowDiag,   sclrDiag,         lesP,
      &              lesQ,       iBC,              BC,
      &              iper,       ilwork,           numpe,
-     &              nshg,       nshl,             nPermDims,  
-     &              nTmpDims,   rowp,             colm,     
-     &              lhsK,       lhsP,             rdtmp,      
+     &              nshg,       nshl,             nPermDims,
+     &              nTmpDims,   rowp,             colm,
+     &              lhsK,       lhsP,             rdtmp,
      &              nnz_tot,    CGsol )
 c
 c.... solve linear system
@@ -269,13 +270,13 @@ c.... setup the linear algebra solver
 c
       rtmp = res(:,1:4)
       call usrNew ( usr,        eqnType,          aperm,
-     &              atemp,      rtmp,             solinc,          
-     &              flowDiag,   sclrDiag,         lesP,   
+     &              atemp,      rtmp,             solinc,
+     &              flowDiag,   sclrDiag,         lesP,
      &              lesQ,       iBC,              BC,
      &              iper,       ilwork,           numpe,
-     &              nshg,       nshl,             nPermDims,  
-     &              nTmpDims,   rowp,             colm,     
-     &              lhsK,       lhsP,             rdtmp,      
+     &              nshg,       nshl,             nPermDims,
+     &              nTmpDims,   rowp,             colm,
+     &              lhsK,       lhsP,             rdtmp,
      &              nnz_tot,    CGsol )
 
           call myfLesSolve( lesId, usr )
@@ -293,7 +294,7 @@ c
       !           12 : Ap-product level >1
       !           13 : Prolongation/Restriction
       !           20 : local boundary MLS time
-     
+
       if (myrank.eq.master) then
       write(*,*)
       endif
@@ -313,17 +314,17 @@ c
       write(*,*)
       endif
 
-#endif     
-      
+#endif
+
       ! End Time profiling output
-      
+
       call getSol ( usr, solinc )
 
       if (numpe > 1) then
          call commu ( solinc, ilwork, nflow, 'out')
       endif
       ENDIF ! end of leslib flow solve
-#endif   
+#endif
       tlescp2 = TMRC()
       impistat=0
       impistat2=0
@@ -332,29 +333,29 @@ c      call summary_stop()
       tcorecp(1) = tcorecp(1) + telmcp2-telmcp1 ! elem. formation
       tcorecp(2) = tcorecp(2) + tlescp2-tlescp1 ! linear alg. solution
       call rstatic (res, y, solinc) ! output flow stats
-c     
+c
 c.... end
-c     
+c
       return
       end
 
       subroutine SolSclr(y,          ac,         u,
      &                   yold,       acold,      uold,
      &                   x,          iBC,
-     &                   BC,         iper,       
-     &                   ilwork,     shp,        shgl, 
-     &                   shpb,       shglb,      rowp,     
+     &                   BC,         iper,
+     &                   ilwork,     shp,        shgl,
+     &                   shpb,       shglb,      rowp,
      &                   colm,       solinc,
      &                   tcorecpscal
-#ifdef HAVE_SVLS     
+#ifdef HAVE_SVLS
      &                   ,svLS_lhs,  svLS_ls,   svLS_nFaces)
 #else
-     &                   )      
-#endif      
+     &                   )
+#endif
 c
 c----------------------------------------------------------------------
 c
-c This is the 2nd interface routine to the Farzin's linear equation 
+c This is the 2nd interface routine to the Farzin's linear equation
 c solver library.
 c
 c input:
@@ -380,26 +381,26 @@ c----------------------------------------------------------------------
 c
       use pointer_data
       use solvedata
-        
+
       include "common.h"
       include "mpif.h"
       include "auxmpi.h"
-#ifdef HAVE_SVLS      
+#ifdef HAVE_SVLS
         include "svLS.h"
-#endif        
-c     
+#endif
+c
       real*8    y(nshg,ndof),             ac(nshg,ndof),
      &          yold(nshg,ndof),          acold(nshg,ndof),
      &          u(nshg,nsd),              uold(nshg,nsd),
      &          x(numnp,nsd),             BC(nshg,ndofBC),
      &          res(nshg,1),
      &          flowDiag(nshg,4),
-     &          sclrDiag(nshg,1)           
+     &          sclrDiag(nshg,1)
 c
-      real*8    shp(MAXTOP,maxsh,MAXQPT),  
-     &          shgl(MAXTOP,nsd,maxsh,MAXQPT), 
+      real*8    shp(MAXTOP,maxsh,MAXQPT),
+     &          shgl(MAXTOP,nsd,maxsh,MAXQPT),
      &          shpb(MAXTOP,maxsh,MAXQPT),
-     &          shglb(MAXTOP,nsd,maxsh,MAXQPT) 
+     &          shglb(MAXTOP,nsd,maxsh,MAXQPT)
 c
       integer   usr(100),                 eqnType,
      &          rowp(nshg*nnz),           colm(nshg+1),
@@ -411,23 +412,23 @@ c
      &          lesP(nshg,1),               lesQ(nshg,1),
      &          solinc(nshg,1),           CGsol(nshg),
      &          tcorecpscal(2)
-#ifdef HAVE_SVLS     
+#ifdef HAVE_SVLS
       TYPE(svLS_lhsType), INTENT(INOUT) :: svLS_lhs
       TYPE(svLS_lsType), INTENT(INOUT) ::  svLS_ls
       INTEGER svLS_nFaces
-#endif      
+#endif
       REAL*8 sumtime
       INTEGER dof, i, j, k, l
       INTEGER, ALLOCATABLE :: incL(:)
       REAL*8, ALLOCATABLE :: faceRes(:), Res1(:,:), Val1(:,:)
-      
-c     
+
+c
 c.... *******************>> Element Data Formation <<******************
 c
 c.... compute solution at n+alpha
 c
-      call itrYAlpha( uold,    yold,    acold, 
-     &                u,       y,       ac,  
+      call itrYAlpha( uold,    yold,    acold,
+     &                u,       y,       ac,
      &                uAlpha,  yAlpha,  acAlpha)
 c
 c.... form the LHS matrices, the residual vector (at alpha)
@@ -437,22 +438,22 @@ c
       telmcp1 = TMRC()
       jsol=nsolt+isclr
       call ElmGMRSclr(yAlpha,acAlpha,    x,
-     &             shp,       shgl,       iBC,       
+     &             shp,       shgl,       iBC,
      &             BC,        shpb,       shglb,
-     &             res,       iper,       ilwork,   
+     &             res,       iper,       ilwork,
      &             rowp,      colm,       lhsS   )
       telmcp2 = TMRC()
       impistat=0
       impistat2=0
       statssclr(1)=0
-#ifdef HAVE_SVLS      
+#ifdef HAVE_SVLS
       IF (svLSFlag .EQ. 1) THEN
 
 c####################################################################
 !     Here calling svLS
 
       ALLOCATE(faceRes(svLS_nFaces), incL(svLS_nFaces))
-      faceRes=zero  
+      faceRes=zero
       incL = 1
       dof = 1
       IF (.NOT.ALLOCATED(Res1)) THEN
@@ -467,14 +468,14 @@ c####################################################################
          Val1(1,i)    = lhsS(i,jsol) ! see above jsol indexs for scalars
       END DO
 
-      CALL svLS_SOLVE(svLS_lhs, svLS_ls, dof, Res1, Val1, incL, 
+      CALL svLS_SOLVE(svLS_lhs, svLS_ls, dof, Res1, Val1, incL,
      2   faceRes)
       statssclr(1)=1.0*svLS_ls%RI%itr
       DO i=1, nshg
          solinc(i,1) = Res1(1,i)
       END DO
       ENDIF
-#endif          
+#endif
 #ifdef HAVE_LESLIB
       if(leslib.eq.1) then
 c
@@ -490,13 +491,13 @@ c
       impistat2=1
       tlescp1 = TMRC()
       call usrNew ( usr,        eqnType,          apermS(1,1,jsol),
-     &              atempS,     res,              solinc,          
-     &              flowDiag,   sclrDiag,         lesP,   
+     &              atempS,     res,              solinc,
+     &              flowDiag,   sclrDiag,         lesP,
      &              lesQ,       iBC,              BC,
      &              iper,       ilwork,           numpe,
-     &              nshg,       nshl,             nPermDimsS,  
-     &              nTmpDimsS,  rowp,             colm,     
-     &              rlhsK,      rlhsP,            lhsS,      
+     &              nshg,       nshl,             nPermDimsS,
+     &              nTmpDimsS,  rowp,             colm,
+     &              rlhsK,      rlhsP,            lhsS,
      &              nnz_tot,    CGsol )
 c
 c.... solve linear system
@@ -506,20 +507,20 @@ c
 
       if (numpe > 1) then
          call commu ( solinc, ilwork, 1, 'out')
-      endif      
+      endif
       ENDIF ! leslib conditional
-#endif      
+#endif
       tlescp2 = TMRC()
       impistat=0
       impistat2=0
 
       tcorecpscal(1) = tcorecpscal(1) + telmcp2-telmcp1 ! elem. formation
       tcorecpscal(2) = tcorecpscal(2) + tlescp2-tlescp1 ! linear alg. solution
- 
+
       nsolsc=5+isclr
       call rstaticSclr (res, y, solinc, nsolsc) ! output scalar stats
-c     
+c
 c.... end
-c     
+c
       return
       end

@@ -220,7 +220,7 @@ c
      &               iBC,            BC,
      &               point2iper,     point2ilwork,   shp,
      &               shgl,           shpb,           shglb,
-     &               point2ifath,    velbar,         point2nsons )
+     &               point2ifath,    velbar,         point2nsons , C)
 c
 c.... return
 c

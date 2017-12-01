@@ -1,13 +1,13 @@
-      subroutine itrdrv (y,         ac,         
-     &                   uold,      x,         
-     &                   iBC,       BC,         
-     &                   iper,      ilwork,     shp,       
+      subroutine itrdrv (y,         ac,
+     &                   uold,      x,
+     &                   iBC,       BC,
+     &                   iper,      ilwork,     shp,
      &                   shgl,      shpb,       shglb,
-     &                   ifath,     velbar,     nsons ) 
+     &                   ifath,     velbar,     nsons , C)
 c
 c----------------------------------------------------------------------
 c
-c This iterative driver is the semi-discrete, predictor multi-corrector 
+c This iterative driver is the semi-discrete, predictor multi-corrector
 c algorithm. It contains the Hulbert Generalized Alpha method which
 c is 2nd order accurate for Rho_inf from 0 to 1.  The method can be
 c made  first-order accurate by setting Rho_inf=-1. It uses CGP and
@@ -26,7 +26,7 @@ c Alberto Figueroa, Winter 2004.  CMM-FSI
 c Irene Vignon, Fall 2004. Impedance BC
 c----------------------------------------------------------------------
 c
-      use pvsQbi     !gives us splag (the spmass at the end of this run 
+      use pvsQbi     !gives us splag (the spmass at the end of this run
       use specialBC !gives us itvn
       use timedata   !allows collection of time series
       use convolImpFlow !for Imp bc
@@ -38,11 +38,11 @@ c
       use iso_c_binding
 
 c      use readarrays !reads in uold and acold
-      
+
         include "common.h"
         include "mpif.h"
         include "auxmpi.h"
-#ifdef HAVE_SVLS        
+#ifdef HAVE_SVLS
         include "svLS.h"
 #endif
 #if !defined(HAVE_SVLS) && !defined(HAVE_LESLIB)
@@ -51,8 +51,8 @@ c      use readarrays !reads in uold and acold
 
 c
 
-        
-        real*8    y(nshg,ndof),              ac(nshg,ndof),           
+
+        real*8    y(nshg,ndof),              ac(nshg,ndof),
      &            yold(nshg,ndof),           acold(nshg,ndof),
      &            u(nshg,nsd),               uold(nshg,nsd),
      &            x(numnp,nsd),              solinc(nshg,ndof),
@@ -61,11 +61,13 @@ c
 
 c
         real*8    res(nshg,ndof)
-c     
-        real*8    shp(MAXTOP,maxsh,MAXQPT),  
-     &            shgl(MAXTOP,nsd,maxsh,MAXQPT), 
+c
+        real*8    shp(MAXTOP,maxsh,MAXQPT),
+     &            shgl(MAXTOP,nsd,maxsh,MAXQPT),
      &            shpb(MAXTOP,maxsh,MAXQPT),
-     &            shglb(MAXTOP,nsd,maxsh,MAXQPT) 
+     &            shglb(MAXTOP,nsd,maxsh,MAXQPT),
+     &            C(num_elem_1D, ipord+1,ipord+1)
+
 c
         integer   rowp(nshg,nnz),         colm(nshg+1),
      &            iBC(nshg),
@@ -116,7 +118,7 @@ c
 #endif
       call initmpistat()  ! see bottom of code to see just how easy it is
 
-      call initmemstat() 
+      call initmemstat()
 
 !--------------------------------------------------------------------
 !     Setting up svLS Moved down for better org
@@ -125,10 +127,10 @@ c
 c only master should be verbose
 c
 
-        if(numpe.gt.0 .and. myrank.ne.master)iverbose=0  
+        if(numpe.gt.0 .and. myrank.ne.master)iverbose=0
 c
 
-        lskeep=lstep 
+        lskeep=lstep
 
         call initTimeSeries()
 c
@@ -148,7 +150,7 @@ c
         endif
 c
 c.... initialize
-c     
+c
         ifuncs(:)  = 0              ! func. evaluation counter
         istep  = 0
         yold   = y
@@ -158,7 +160,7 @@ c
 !Init output fields
 !!!!!!!!!!!!!!!!!!
         numerr=10+isurf
-        allocate(rerr(nshg,numerr)) 
+        allocate(rerr(nshg,numerr))
         rerr = zero
 
         if(ierrcalc.eq.1 .or. ioybar.eq.1) then ! we need ybar for error too
@@ -178,7 +180,7 @@ c
         endif
 
         if(abs(itwmod).ne.1 .and. iowflux.eq.1) then
-          allocate(wallssVec(nshg,3)) 
+          allocate(wallssVec(nshg,3))
           if (ioybar .eq. 1) then
             allocate(wallssVecbar(nshg,3))
             wallssVecbar = zero ! Initialization important if mean wss computed
@@ -186,7 +188,7 @@ c
         endif
 
 ! both nstepsincycle and nphasesincycle needs to be set
-        if(nstepsincycle.eq.0) nphasesincycle = 0 
+        if(nstepsincycle.eq.0) nphasesincycle = 0
         if(nphasesincycle.ne.0) then
 !     &     allocate(yphbar(nshg,5,nphasesincycle))
           if (ivort == 1) then
@@ -207,7 +209,7 @@ c
         if(iramp.eq.1) then
           call BCprofileInit(vbc_prof,x)
         endif
-      
+
 c
 c.... ---------------> initialize Equation Solver <---------------
 c
@@ -235,14 +237,14 @@ c
 
 c
 c.... set up the time integration parameters
-c         
+c
          nstp   = nstep(itseq)
          nitr   = niter(itseq)
          LCtime = loctim(itseq)
          dtol(:)= deltol(itseq,:)
 
          call itrSetup ( y, acold )
-        
+
 c
 c...initialize the coefficients for the impedance convolution,
 c   which are functions of alphaf so need to do it after itrSetup
@@ -292,44 +294,44 @@ c
         endif
 
          do 2000 istp = 1, nstp
-           if(iramp.eq.1) 
+           if(iramp.eq.1)
      &        call BCprofileScale(vbc_prof,BC,yold)
 
            call rerun_check(stopjob)
-           if(myrank.eq.master) write(*,*) 
+           if(myrank.eq.master) write(*,*)
      &         'stopjob,lstep,istep', stopjob,lstep,istep
            if(stopjob.eq.lstep) then
               stopjob=-2 ! this is the code to finish
              if ((irs .ge. 1) .and. (mod(lstep, ntout) .eq. 0)) then
-                if(myrank.eq.master) write(*,*) 
+                if(myrank.eq.master) write(*,*)
      &         'line 473 says last step written so exit'
                 goto 2002  ! the step was written last step so just exit
-             else            
-                if(myrank.eq.master) 
+             else
+                if(myrank.eq.master)
      &         write(*,*) 'line 473 says last step not written'
-                istep=nstp  ! have to do this so that solution will be written 
+                istep=nstp  ! have to do this so that solution will be written
                 goto 2001
              endif
            endif
 
 c.... if we have time varying boundary conditions update the values of BC.
 c     these will be for time step n+1 so use lstep+1
-c     
-            if(itvn.gt.0) call BCint((lstep+1)*Delt(1), shp, shgl, 
+c
+            if(itvn.gt.0) call BCint((lstep+1)*Delt(1), shp, shgl,
      &                               shpb, shglb, x, BC, iBC)
 
 c
 c ... calculate the pressure contribution that depends on the history for the Imp. BC
 c
-            if(numImpSrfs.gt.0) then 
+            if(numImpSrfs.gt.0) then
                call pHist(poldImp,QHistImp,ImpConvCoef,
      &                    ntimeptpT,numImpSrfs)
             endif
 c
 c ... calc the pressure contribution that depends on the history for the RCR BC
-c     
-            if(numRCRSrfs.gt.0) then 
-               call CalcHopRCR (Delt(itseq), lstep, numRCRSrfs) 
+c
+            if(numRCRSrfs.gt.0) then
+               call CalcHopRCR (Delt(itseq), lstep, numRCRSrfs)
                call CalcRCRConvCoef(lstep,numRCRSrfs)
                call pHist(poldRCR,QHistRCR,RCRConvCoef,nsteprcr,
      &              numRCRSrfs)
@@ -337,12 +339,12 @@ c
 
             if(iLES.gt.0) then  !complicated stuff has moved to
                                         !routine below
-               call lesmodels(yold,  acold,     shgl,      shp, 
+               call lesmodels(yold,  acold,     shgl,      shp,
      &                        iper,  ilwork,    rowp,      colm,
-     &                        nsons, ifath,     x,   
+     &                        nsons, ifath,     x,
      &                        iBC,   BC)
 
-            
+
             endif
 
 c.... set traction BCs for modeled walls
@@ -379,29 +381,29 @@ c
 c
                      iter   = iter+1
                      ifuncs(1)  = ifuncs(1) + 1
-c     
+c
                      Force(1) = zero
                      Force(2) = zero
                      Force(3) = zero
                      HFlux    = zero
-                     lhs = 1 - min(1,mod(ifuncs(1)-1,LHSupd(1))) 
+                     lhs = 1 - min(1,mod(ifuncs(1)-1,LHSupd(1)))
 
                      call SolFlow(y,          ac,        u,
      &                         yold,          acold,     uold,
      &                         x,             iBC,
      &                         BC,            res,
-     &                         iper,          
-     &                         ilwork,        shp,       shgl,
-     &                         shpb,          shglb,     rowp,     
-     &                         colm,          
+     &                         iper,
+     &                         ilwork,        shp,       shgl, C,
+     &                         shpb,          shglb,     rowp,
+     &                         colm,
      &                         solinc,        rerr,      tcorecp,
      &                         GradV,      sumtime
 #ifdef HAVE_SVLS
      &                         ,svLS_lhs,     svLS_ls,  svLS_nFaces)
 #else
      &                         )
-#endif      
-                  
+#endif
+
                   else          ! scalar type solve
                      if (icode.eq.5) then ! Solve for Temperature
                                 ! (encoded as (nsclr+1)*10)
@@ -409,20 +411,20 @@ c
                         ifuncs(2)  = ifuncs(2) + 1
                         j=1
                      else       ! solve a scalar  (encoded at isclr*10)
-                        isclr=isolve  
+                        isclr=isolve
                         ifuncs(isclr+2)  = ifuncs(isclr+2) + 1
                         j=isclr+nsolt
                         if((iLSet.eq.2).and.(ilss.eq.0)
-     &                       .and.(isclr.eq.2)) then 
+     &                       .and.(isclr.eq.2)) then
                            ilss=1 ! throw switch (once per step)
                            y(:,7)=y(:,6) ! redistance field initialized
                            ac(:,7)   = zero
                            call itrBCSclr (  y,  ac,  iBC,  BC, iper,
      &                          ilwork)
-c     
-c....store the flow alpha, gamma parameter values and assigm them the 
+c
+c....store the flow alpha, gamma parameter values and assigm them the
 c....Backward Euler parameters to solve the second levelset scalar
-c     
+c
                            alfit=alfi
                            gamit=gami
                            almit=almi
@@ -437,29 +439,29 @@ c     Delt(1)= Deltt ! Give a pseudo time step
                      endif ! deciding between temperature and scalar
 
                      lhs = 1 - min(1,mod(ifuncs(isclr+2)-1,
-     &                                   LHSupd(isclr+2))) 
+     &                                   LHSupd(isclr+2)))
 
                      call SolSclr(y,          ac,        u,
      &                         yold,          acold,     uold,
      &                         x,             iBC,
-     &                         BC,            
-     &                         iper,          
+     &                         BC,
+     &                         iper,
      &                         ilwork,        shp,       shgl,
-     &                         shpb,          shglb,     rowp,     
-     &                         colm,          
+     &                         shpb,          shglb,     rowp,
+     &                         colm,
      &                         solinc(1,isclr+5), tcorecpscal
 #ifdef HAVE_SVLS
      &                         ,svLS_lhs_S(isclr),   svLS_ls_S(isclr), svls_nfaces)
 #else
      &                         )
 #endif
-                        
-                        
+
+
                   endif         ! end of scalar type solve
 
                else ! this is an update  (mod did not equal zero)
                   iupdate=icode/10  ! what to update
-                  if(icode.eq.1) then !update flow  
+                  if(icode.eq.1) then !update flow
                      call itrCorrect ( y,    ac,    u,   solinc, iBC)
                      call itrBC (y,  ac,  iBC,  BC, iper, ilwork)
                   else  ! update scalar
@@ -474,21 +476,21 @@ c     Delt(1)= Deltt ! Give a pseudo time step
                         if (ivconstraint .eq. 1) then
                            call itrBCSclr (  y,  ac,  iBC,  BC, iper,
      &                          ilwork)
-c                    
+c
 c ... applying the volume constraint on second level set scalar
 c
-                           call solvecon (y,    x,      iBC,  BC, 
+                           call solvecon (y,    x,      iBC,  BC,
      &                          iper, ilwork, shp,  shgl)
 c
                         endif   ! end of volume constraint calculations
                      endif      ! end of redistance calculations
-c                     
+c
                         call itrBCSclr (  y,  ac,  iBC,  BC, iper,
      &                       ilwork)
                      endif      ! end of flow or scalar update
                   endif         ! end of switch between solve or update
                enddo            ! loop over sequence in step
-c     
+c
 c
 c.... obtain the time average statistics
 c
@@ -501,19 +503,19 @@ c
      &                           rowp,   colm,     lhsK,   lhsP )
             endif
 
-c     
+c
 c  Find the solution at the end of the timestep and move it to old
 c
-c  
+c
 c ...First to reassign the parameters for the original time integrator scheme
 c
-            if((iLSet.eq.2).and.(ilss.eq.1)) then 
+            if((iLSet.eq.2).and.(ilss.eq.1)) then
                alfi =alfit
                gami =gamit
-               almi =almit 
+               almi =almit
                Delt(1)=Deltt
                Dtgl =Dtglt
-            endif          
+            endif
             call itrUpdate( yold,  acold,   uold,  y,    ac,   u)
             call itrBC (yold, acold,  iBC,  BC,  iper,ilwork)
 
@@ -525,22 +527,22 @@ c
             call printmeminfo("itrdrv"//char(0))
 
 c
-c ..  Compute vorticity 
+c ..  Compute vorticity
 c
-            if ( icomputevort == 1) 
+            if ( icomputevort == 1)
      &        call computeVort( vorticity, GradV,strain)
 c
 c.... update and the aerodynamic forces
 c
             call forces ( yold,  ilwork )
-            
+
 c
 c .. write out the instantaneous solution
 c
 2001    continue  ! we could get here by 2001 label if user requested stop
         if (((irs .ge. 1) .and. (mod(lstep, ntout) .eq. 0)) .or.
      &      istep.eq.nstep(itseq)) then
- 
+
 !so that we can see progress in force file close it so that it flushes
 !and  then reopen in append mode
 
@@ -552,7 +554,7 @@ c
 
            call restar ('out ',  yold  ,ac)
 
-           if(ivort == 1) then 
+           if(ivort == 1) then
              call write_field(myrank,'a','vorticity',9,vorticity,
      &                       'd',nshg,5,lstep)
            endif
@@ -562,14 +564,14 @@ c
            if(myrank.eq.master) then
              write(*,*) 'line 755 says no write before stopping'
              write(*,*) 'istep,nstep,irs',istep,nstep(itseq),irs
-           endif    
+           endif
         endif  !just the instantaneous stuff for videos
 c
 c.... compute the consistent boundary flux
 c
             if(abs(itwmod).ne.1 .and. iowflux.eq.1) then
                call Bflux ( yold,      acold,      uold,    x,
-     &                      shp,       shgl,       shpb,   
+     &                      shp,       shgl,       shpb,
      &                      shglb,     ilwork,     iBC,
      &                      BC,        iper,       wallssVec)
             endif
@@ -577,35 +579,35 @@ c
            if(stopjob.eq.-2) goto 2003
 
 
-c 
+c
 c ... update the flow history for the impedance convolution, filter it and write it out
-c    
+c
             if(numImpSrfs.gt.zero) then
                call UpdHistConv(y,nsrflistImp,numImpSrfs) !uses Delt(1)
             endif
 
-c 
+c
 c ... update the flow history for the RCR convolution
-c    
+c
             if(numRCRSrfs.gt.zero) then
                call UpdHistConv(y,nsrflistRCR,numRCRSrfs) !uses lstep
             endif
 
 
 c...  dump TIME SERIES
-            
+
             if (exts) then
               ! Note: freq is only defined if exts is true,
               ! i.e. if xyzts.dat is present in the #-procs_case
               if ( mod(lstep-1,freq).eq.0) call dumpTimeSeries()
             endif
 
-            if((irscale.ge.0).or.(itwmod.gt.0)) 
+            if((irscale.ge.0).or.(itwmod.gt.0))
      &           call getvel (yold,     ilwork, iBC,
      &                        nsons,    ifath, velbar)
 
             if((irscale.ge.0).and.(myrank.eq.master)) then
-               call genscale(yold,       x,       iper, 
+               call genscale(yold,       x,       iper,
      &                       iBC,     ifath,   velbar,
      &                       nsons)
             endif
@@ -615,7 +617,7 @@ c
             ntoutv=max(ntout,100)   ! velb is not needed so often
             if ((irs .ge. 1) .and. (mod(lstep, ntout) .eq. 0)) then
                if( (mod(lstep, ntoutv) .eq. 0) .and.
-     &              ((irscale.ge.0).or.(itwmod.gt.0) .or. 
+     &              ((irscale.ge.0).or.(itwmod.gt.0) .or.
      &              ((nsonmax.eq.1).and.(iLES.gt.0))))
      &              call rwvelb  ('out ',  velbar  ,ifail)
             endif
@@ -626,8 +628,8 @@ c
 
 c
 c.... -------------------> error calculation  <-----------------
-c 
-            if(ierrcalc.eq.1 .or. ioybar.eq.1) 
+c
+            if(ierrcalc.eq.1 .or. ioybar.eq.1)
      &       call collectErrorYbar(ybar,yold,wallssVec,wallssVecBar,
      &               vorticity,yphbar,rerr,irank2ybar,irank2yphbar)
  2003       continue ! we get here if stopjob equals lstep and this jumped over
@@ -636,7 +638,7 @@ c
 !           written
 c
 c.... ---------------------->  Complete Restart  Processing  <----------------------
-c   
+c
 !   for now it is the same frequency but need to change this
 !   soon.... but don't forget to change the field counter in
 !  new_interface.cc
@@ -659,7 +661,7 @@ c
             write(6,*) 'call saveLesRestart for projection and'//
      &           'pressure projection vectors', tcormr2-tcormr1
           endif
-#endif 
+#endif
           endif
 
           if(ierrcalc.eq.1) then
@@ -690,7 +692,7 @@ c
               call write_field(myrank,'a','ybar',4,
      &                ybar,'d',nshg,13,lstep)
             endif
-                 
+
             if(abs(itwmod).ne.1 .and. iowflux.eq.1) then
               call write_field(myrank,'a','wssbar',6,
      &             wallssVecBar,'d',nshg,3,lstep)
@@ -736,14 +738,14 @@ c
 
         endif ! write out complete restart state
         !next 2 lines are two ways to end early
-        if(stopjob.eq.-2) goto 2002    
+        if(stopjob.eq.-2) goto 2002
         if(istop.eq.1000) goto 2002 ! stop when delta small (see rstatic)
  2000 continue
  2002 continue
 
 ! done with time stepping so deallocate fields already written
 !
- 
+
           if(ioybar.eq.1) then
             deallocate(ybar)
             if(abs(itwmod).ne.1 .and. iowflux.eq.1) then
@@ -757,7 +759,7 @@ c
             deallocate(strain,vorticity)
           endif
           if(abs(itwmod).ne.1 .and. iowflux.eq.1) then
-            deallocate(wallssVec) 
+            deallocate(wallssVec)
           endif
           if(iRANS.lt.0) then
             deallocate(d2wall)
@@ -787,7 +789,7 @@ c         call MPI_ABORT(MPI_COMM_WORLD, ierr)
          call destroyfncorp
 
  3000 continue
- 
+
 
 c
 c.... close history and aerodynamic forces files
@@ -845,18 +847,18 @@ c
 
       return
       end
-      
-      subroutine lesmodels(y,     ac,        shgl,      shp, 
-     &                     iper,  ilwork,    rowp,      colm,    
-     &                     nsons, ifath,     x,   
+
+      subroutine lesmodels(y,     ac,        shgl,      shp,
+     &                     iper,  ilwork,    rowp,      colm,
+     &                     nsons, ifath,     x,
      &                     iBC,   BC)
-      
+
       include "common.h"
 
-      real*8    y(nshg,ndof),              ac(nshg,ndof),           
+      real*8    y(nshg,ndof),              ac(nshg,ndof),
      &            x(numnp,nsd),
      &            BC(nshg,ndofBC)
-      real*8    shp(MAXTOP,maxsh,MAXQPT),  
+      real*8    shp(MAXTOP,maxsh,MAXQPT),
      &            shgl(MAXTOP,nsd,maxsh,MAXQPT)
 
 c
@@ -882,7 +884,7 @@ c
 
 c.... get dynamic model coefficient
 c
-      ilesmod=iLES/10  
+      ilesmod=iLES/10
 c
 c digit bit set filter rule, 10 bit set model
 c
@@ -891,9 +893,9 @@ c
 
 
          if(isubmod.eq.2) then
-            call SUPGdis(y,      ac,        shgl,      shp, 
-     &                   iper,   ilwork,    
-     &                   nsons,  ifath,     x,   
+            call SUPGdis(y,      ac,        shgl,      shp,
+     &                   iper,   ilwork,
+     &                   nsons,  ifath,     x,
      &                   iBC,    BC, stabdis, xavegt3)
          endif
 
@@ -903,85 +905,85 @@ c
                                                      ! model wanted
 
             if(i2filt.eq.0)then ! If simple filter
-              
+
                if(modlstats .eq. 0) then ! If no model stats wanted
-                  call getdmc (y,       shgl,      shp, 
+                  call getdmc (y,       shgl,      shp,
      &                         iper,       ilwork,    nsons,
      &                         ifath,      x)
-               else             ! else get model stats 
-                  call stdfdmc (y,       shgl,      shp, 
+               else             ! else get model stats
+                  call stdfdmc (y,       shgl,      shp,
      &                          iper,       ilwork,    nsons,
      &                          ifath,      x)
-               endif            ! end of stats if statement  
+               endif            ! end of stats if statement
 
             else                ! else if twice filtering
 
-               call widefdmc(y,       shgl,      shp, 
+               call widefdmc(y,       shgl,      shp,
      &                       iper,       ilwork,    nsons,
      &                       ifath,      x)
 
-               
+
             endif               ! end of simple filter if statement
 
          endif                  ! end of SUPG or no sub-model if statement
 
 
          if( (isubmod.eq.1) ) then ! If DFWR sub-model wanted
-            call cdelBHsq (y,       shgl,      shp, 
+            call cdelBHsq (y,       shgl,      shp,
      &                     iper,       ilwork,    nsons,
      &                     ifath,      x,         cdelsq1)
-            call FiltRat (y,       shgl,      shp, 
+            call FiltRat (y,       shgl,      shp,
      &                    iper,       ilwork,    nsons,
      &                    ifath,      x,         cdelsq1,
      &                    fwr4,       fwr3)
 
-            
+
             if (i2filt.eq.0) then ! If simple filter wanted
-               call DFWRsfdmc(y,       shgl,      shp, 
+               call DFWRsfdmc(y,       shgl,      shp,
      &                        iper,       ilwork,    nsons,
-     &                        ifath,      x,         fwr2, fwr3) 
-            else                ! else if twice filtering wanted 
-               call DFWRwfdmc(y,       shgl,      shp, 
+     &                        ifath,      x,         fwr2, fwr3)
+            else                ! else if twice filtering wanted
+               call DFWRwfdmc(y,       shgl,      shp,
      &                        iper,       ilwork,    nsons,
-     &                        ifath,      x,         fwr4, fwr4) 
+     &                        ifath,      x,         fwr4, fwr4)
             endif               ! end of simple filter if statement
-             
+
          endif                  ! end of DFWR sub-model if statement
 
          if( (isubmod.eq.2) )then ! If SUPG sub-model wanted
-            call dmcSUPG (y,           ac,         shgl,      
-     &                    shp,         iper,       ilwork,    
+            call dmcSUPG (y,           ac,         shgl,
+     &                    shp,         iper,       ilwork,
      &                    nsons,       ifath,      x,
      &                    iBC,    BC,  rowp,       colm,
      &                    xavegt2,    stabdis)
          endif
 
          if(idis.eq.1)then      ! If SUPG/Model dissipation wanted
-            call ediss (y,        ac,      shgl,      
-     &                  shp,      iper,       ilwork,    
+            call ediss (y,        ac,      shgl,
+     &                  shp,      iper,       ilwork,
      &                  nsons,    ifath,      x,
      &                  iBC,      BC,  xavegt)
          endif
 
       endif                     ! end of ilesmod
-      
+
       if (ilesmod .eq. 1) then  ! 10 < iLES < 20 => dynamic-mixed
                                 ! at nodes based on discrete filtering
-         call bardmc (y,       shgl,      shp, 
-     &                iper,    ilwork,    
-     &                nsons,   ifath,     x) 
+         call bardmc (y,       shgl,      shp,
+     &                iper,    ilwork,
+     &                nsons,   ifath,     x)
       endif
-      
+
       if (ilesmod .eq. 2) then  ! 20 < iLES < 30 => dynamic at quad
-                                ! pts based on lumped projection filt. 
+                                ! pts based on lumped projection filt.
 
          if(isubmod.eq.0)then
-            call projdmc (y,       shgl,      shp, 
-     &                    iper,       ilwork,    x) 
+            call projdmc (y,       shgl,      shp,
+     &                    iper,       ilwork,    x)
          else
-            call cpjdmcnoi (y,      shgl,      shp, 
+            call cpjdmcnoi (y,      shgl,      shp,
      &                      iper,   ilwork,       x,
-     &                      rowp,   colm, 
+     &                      rowp,   colm,
      &                      iBC,    BC)
          endif
 
@@ -1005,10 +1007,10 @@ c
       subroutine CalcImpConvCoef (numISrfs, numTpoints)
 
       use convolImpFlow !uses flow history and impedance for convolution
-      
+
       include "common.h" !for alfi
-      
-      integer numISrfs, numTpoints      
+
+      integer numISrfs, numTpoints
 
       allocate (ConvCoef(numTpoints+2,3)) !same time discret. for all imp. BC
       do j=1,numTpoints+2
@@ -1022,25 +1024,25 @@ c
       ConvCoef(2,3)=zero
       ConvCoef(numTpoints+1,1)=zero
       ConvCoef(numTpoints+2,2)=zero
-      ConvCoef(numTpoints+2,1)=zero  
+      ConvCoef(numTpoints+2,1)=zero
 c
 c...calculate the coefficients for the impedance convolution
-c 
+c
       allocate (ImpConvCoef(numTpoints+2,numISrfs))
 
 c..coefficients below assume Q linear in time step, Z constant
 c            do j=3,numTpoints
 c                ImpConvCoef(j,:) = ValueListImp(j-1,:)*ConvCoef(j,3)
-c     &                             + ValueListImp(j,:)*ConvCoef(j,2)    
-c     &                             + ValueListImp(j+1,:)*ConvCoef(j,1)  
+c     &                             + ValueListImp(j,:)*ConvCoef(j,2)
+c     &                             + ValueListImp(j+1,:)*ConvCoef(j,1)
 c            enddo
 c            ImpConvCoef(1,:) = ValueListImp(2,:)*ConvCoef(1,1)
-c            ImpConvCoef(2,:) = ValueListImp(2,:)*ConvCoef(2,2)    
+c            ImpConvCoef(2,:) = ValueListImp(2,:)*ConvCoef(2,2)
 c     &                       + ValueListImp(3,:)*ConvCoef(2,1)
 c            ImpConvCoef(numTpoints+1,:) =
 c     &           ValueListImp(numTpoints,:)*ConvCoef(numTpoints+1,3)
-c     &         + ValueListImp(numTpoints+1,:)*ConvCoef(numTpoints+1,2) 
-c            ImpConvCoef(numTpoints+2,:) = 
+c     &         + ValueListImp(numTpoints+1,:)*ConvCoef(numTpoints+1,2)
+c            ImpConvCoef(numTpoints+2,:) =
 c     &           ValueListImp(numTpoints+1,:)*ConvCoef(numTpoints+2,3)
 
 c..try easiest convolution Q and Z constant per time step
@@ -1049,37 +1051,37 @@ c..try easiest convolution Q and Z constant per time step
       enddo
       ImpConvCoef(1,:) =zero
       ImpConvCoef(2,:) =zero
-      ImpConvCoef(numTpoints+2,:) = 
+      ImpConvCoef(numTpoints+2,:) =
      &           ValueListImp(numTpoints+1,:)/numTpoints
 c compensate for yalpha passed not y in Elmgmr()
       ImpConvCoef(numTpoints+1,:)= ImpConvCoef(numTpoints+1,:)
-     &                  - ImpConvCoef(numTpoints+2,:)*(1.0-alfi)/alfi 
-      ImpConvCoef(numTpoints+2,:)= ImpConvCoef(numTpoints+2,:)/alfi 
+     &                  - ImpConvCoef(numTpoints+2,:)*(1.0-alfi)/alfi
+      ImpConvCoef(numTpoints+2,:)= ImpConvCoef(numTpoints+2,:)/alfi
       return
       end
 
-c 
+c
 c ... update the flow rate history for the impedance convolution, filter it and write it out
-c    
+c
       subroutine UpdHistConv(y,nsrfIdList,numSrfs)
-      
+
       use convolImpFlow !brings ntimeptpT, QHistImp, QHistTry, QHistTryF, numImpSrfs
       use convolRCRFlow !brings QHistRCR, numRCRSrfs
 
-      include "common.h" 
-      
+      include "common.h"
+
       integer   nsrfIdList(0:MAXSURF), numSrfs
       character*20 fname1
       character*10 cname2
       character*5 cname
-      real*8    y(nshg,3) !velocity at time n+1   
+      real*8    y(nshg,3) !velocity at time n+1
       real*8    NewQ(0:MAXSURF) !temporary unknown for the flow rate
-                        !that needs to be added to the flow history 
+                        !that needs to be added to the flow history
 
       call GetFlowQ(NewQ,y,nsrfIdList,numSrfs) !new flow at time n+1
 c
 c... for imp BC: shift QHist, add new constribution, filter and write out
-c      
+c
       if(numImpSrfs.gt.zero) then
          do j=1, ntimeptpT
             QHistImp(j,1:numSrfs)=QHistImp(j+1,1:numSrfs)
@@ -1105,7 +1107,7 @@ c         QHistImp(1,:)=zero ! why do we do this? for beta(1,:) = zero it does n
          enddo
 c
 c.... write out the new history of flow rates to Qhistor.dat
-c      
+c
          if (((irs .ge. 1) .and. ((mod(lstep, ntout) .eq. 0) .or.
      &        (istep .eq. nstep(1)))) .and.
      &        (myrank .eq. master)) then
@@ -1125,7 +1127,7 @@ c... write out a copy with step number to be able to restart
             enddo
             close(8166)
          endif
-      endif 
+      endif
 
 c
 c... for RCR bc just add the new contribution
@@ -1134,7 +1136,7 @@ c
          QHistRCR(lstep+1,1:numSrfs) = NewQ(1:numSrfs)
 c
 c.... write out the new history of flow rates to Qhistor.dat
-c      
+c
          if ((irs .ge. 1) .and. (myrank .eq. master)) then
             if(istep.eq.1) then
                open(unit=816,file='Qhistor.dat',status='unknown')
@@ -1155,7 +1157,7 @@ c... write out a copy with step number to be able to restart
                fname1 = 'Qhistor'
                fname1 = trim(fname1)//trim(cname2(lstep))//'.dat'
                open(unit=8166,file=trim(fname1),status='unknown')
-               write(8166,*) lstep+1 
+               write(8166,*) lstep+1
                do j=1,lstep+1
                   write(8166,*) (QHistRCR(j,n),n=1, numSrfs)
                enddo
@@ -1163,7 +1165,7 @@ c... write out a copy with step number to be able to restart
             endif
          endif
       endif
-      
+
       return
       end
 
@@ -1173,27 +1175,27 @@ c
       subroutine CalcRCRConvCoef (stepn, numSrfs)
 
       use convolRCRFlow !brings in ValueListRCR, dtRCR
-      
+
       include "common.h" !brings alfi
-      
-      integer numSrfs, stepn    
+
+      integer numSrfs, stepn
 
       RCRConvCoef = zero
       if (stepn .eq. 0) then
         RCRConvCoef(1,:) = ValueListRCR(1,:)*(1.0-alfi) +
-     &   ValueListRCR(3,:)*(-alfi + 1.0 + 1/dtRCR(:) 
+     &   ValueListRCR(3,:)*(-alfi + 1.0 + 1/dtRCR(:)
      &     - exp(-alfi*dtRCR(:))*(1 + 1/dtRCR(:)))
-        RCRConvCoef(2,:) = ValueListRCR(1,:)*alfi 
+        RCRConvCoef(2,:) = ValueListRCR(1,:)*alfi
      &     + ValueListRCR(3,:)
      &     *(alfi - 1/dtRCR(:) + exp(-alfi*dtRCR(:))/dtRCR(:))
       endif
       if (stepn .ge. 1) then
         RCRConvCoef(1,:) =-ValueListRCR(3,:)*exp(-dtRCR(:)*(stepn+alfi))
      &        *(1 + (1 - exp(dtRCR(:)))/dtRCR(:))
-        RCRConvCoef(stepn+1,:) = ValueListRCR(1,:)*(1-alfi) 
-     &     - ValueListRCR(3,:)*(alfi - 1 - 1/dtRCR(:) 
+        RCRConvCoef(stepn+1,:) = ValueListRCR(1,:)*(1-alfi)
+     &     - ValueListRCR(3,:)*(alfi - 1 - 1/dtRCR(:)
      &     + exp(-alfi*dtRCR(:))/dtRCR(:)*(2 - exp(-dtRCR(:))))
-        RCRConvCoef(stepn+2,:) = ValueListRCR(1,:)*alfi 
+        RCRConvCoef(stepn+2,:) = ValueListRCR(1,:)*alfi
      &     + ValueListRCR(3,:)
      &     *(alfi - 1/dtRCR(:) + exp(-alfi*dtRCR(:))/dtRCR(:))
       endif
@@ -1207,8 +1209,8 @@ c
 
 c compensate for yalpha passed not y in Elmgmr()
       RCRConvCoef(stepn+1,:)= RCRConvCoef(stepn+1,:)
-     &                  - RCRConvCoef(stepn+2,:)*(1.0-alfi)/alfi 
-      RCRConvCoef(stepn+2,:)= RCRConvCoef(stepn+2,:)/alfi 
+     &                  - RCRConvCoef(stepn+2,:)*(1.0-alfi)/alfi
+      RCRConvCoef(stepn+2,:)= RCRConvCoef(stepn+2,:)/alfi
 
       return
       end
@@ -1222,24 +1224,24 @@ c
 
       include "common.h"
 
-      integer numSrfs, stepn      
+      integer numSrfs, stepn
       real*8  PdistCur(0:MAXSURF), timestepRCR
-      
+
       HopRCR=zero
       call RCRint(timestepRCR*(stepn + alfi),PdistCur)
-      HopRCR(1:numSrfs) = RCRic(1:numSrfs) 
+      HopRCR(1:numSrfs) = RCRic(1:numSrfs)
      &     *exp(-dtRCR(1:numSrfs)*(stepn + alfi)) + PdistCur(1:numSrfs)
       return
       end
-c 
+c
 c ... initialize the influence of the initial conditions for the RCR BC
-c    
+c
       subroutine calcRCRic(y,srfIdList,numSrfs)
-      
+
       use convolRCRFlow    !brings RCRic, ValueListRCR, ValuePdist
 
       include "common.h"
-      
+
       integer   srfIdList(0:MAXSURF), numSrfs, irankCoupled
       real*8    y(nshg,4) !need velocity and pressure
       real*8    Qini(0:MAXSURF) !initial flow rate
@@ -1263,7 +1265,7 @@ c
          Pini(1:numSrfs)=zero    ! hack
       endif
       call RCRint(istep,PdistIni) !get initial distal P (use istep)
-      RCRic(1:numSrfs) = Pini(1:numSrfs) 
+      RCRic(1:numSrfs) = Pini(1:numSrfs)
      &          - ValueListRCR(1,:)*Qini(1:numSrfs)-PdistIni(1:numSrfs)
       return
       end
@@ -1275,10 +1277,10 @@ c.........function that integrates a scalar over a boundary
 
       include "common.h"
       include "mpif.h"
-      
+
       integer   srfIdList(0:MAXSURF), numSrfs, irankCoupled, i, k
       real*8    scal(nshg), scalInt(0:MAXSURF), scalIntProc(0:MAXSURF)
-      
+
       scalIntProc = zero
       do i = 1,nshg
         if(numSrfs.gt.zero) then
@@ -1289,11 +1291,11 @@ c.........function that integrates a scalar over a boundary
               scalIntProc(irankCoupled) = scalIntProc(irankCoupled)
      &                            + NASC(i)*scal(i)
               exit
-            endif      
-          enddo       
+            endif
+          enddo
         endif
       enddo
-c      
+c
 c     at this point, each scalint has its "nodes" contributions to the scalar
 c     accumulated into scalIntProc. Note, because NASC is on processor this
 c     will NOT be the scalar for the surface yet
@@ -1302,8 +1304,8 @@ c.... reduce integrated scalar for each surface, push on scalInt
 c
         npars=MAXSURF+1
        call MPI_ALLREDUCE (scalIntProc, scalInt(:), npars,
-     &        MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD,ierr)  
-   
+     &        MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD,ierr)
+
       return
       end
 
@@ -1370,7 +1372,7 @@ c
            open(unit=626,file='xyzts.dat',status='old')
            read(626,*) ntspts, freq, tolpt, iterat, varcod
            call sTD             ! sets data structures
-           
+
            do jj=1,ntspts       ! read coordinate data where solution desired
               read(626,*) ptts(jj,1),ptts(jj,2),ptts(jj,3)
            enddo
@@ -1378,7 +1380,7 @@ c
 
            statptts(:,:) = 0
            parptts(:,:) = zero
-           varts(:,:) = zero           
+           varts(:,:) = zero
 
 
            iv_rankpernode = iv_rankpercore*iv_corepernode
@@ -1387,7 +1389,7 @@ c
            if (myrank .eq. 0) then
              write(*,*) 'Info for probes:'
              write(*,*) '  Ranks per core:',iv_rankpercore
-             write(*,*) '  Cores per node:',iv_corepernode 
+             write(*,*) '  Cores per node:',iv_corepernode
              write(*,*) '  Ranks per node:',iv_rankpernode
              write(*,*) '  Total number of nodes:',iv_totnodes
              write(*,*) '  Total number of cores',iv_totcores
@@ -1399,21 +1401,21 @@ c
                ! Compute the adequate rank which will take care of probe jj
                jjm1 = jj-1
                iv_node = (iv_totnodes-1)-mod(jjm1,iv_totnodes)
-               iv_core = (iv_corepernode-1) - mod((jjm1 - 
+               iv_core = (iv_corepernode-1) - mod((jjm1 -
      &              mod(jjm1,iv_totnodes))/iv_totnodes,iv_corepernode)
-               iv_thread = (iv_rankpercore-1) - mod((jjm1- 
+               iv_thread = (iv_rankpercore-1) - mod((jjm1-
      &              (mod(jjm1,iv_totcores)))/iv_totcores,iv_rankpercore)
-               iv_rank(jj) = iv_node*iv_rankpernode 
+               iv_rank(jj) = iv_node*iv_rankpernode
      &                     + iv_core*iv_rankpercore
      &                     + iv_thread
-                 
+
                if(myrank == 0) then
                  write(*,*) '  Probe', jj, 'handled by rank',
      &                         iv_rank(jj), ' on node', iv_node
                endif
 
                ! Verification just in case
-               if(iv_rank(jj) .lt.0 .or. iv_rank(jj) .ge. numpe) then 
+               if(iv_rank(jj) .lt.0 .or. iv_rank(jj) .ge. numpe) then
                  write(*,*) 'WARNING: iv_rank(',jj,') is ', iv_rank(jj),
      &                      ' and reset to numpe-1'
                  iv_rank(jj) = numpe-1
@@ -1459,7 +1461,7 @@ c
         use solvedata
         use fncorpmod
         include "common.h"
-#ifdef HAVE_SVLS        
+#ifdef HAVE_SVLS
         include "svLS.h"
         include "mpif.h"
         include "auxmpi.h"
@@ -1483,12 +1485,12 @@ c
         call SolverLicenseServer(servername)
 !      ENDIF
 #endif
-c     
+c
 c.... For linear solver Library
 c
 c
 c.... assign parameter values
-c     
+c
         do i = 1, 100
            numeqns(i) = i
         enddo
@@ -1518,7 +1520,7 @@ c
 !     Setting up svLS or leslib for flow
         IF (svLSFlag .EQ. 1) THEN
 ! ifdef svLS_1 : opening large ifdef for svLS solver setup
-#ifdef HAVE_SVLS 
+#ifdef HAVE_SVLS
           call aSDf
           IF(nPrjs.eq.0) THEN
             svLSType=2  !GMRES if borrowed ACUSIM projection vectors variable set to zero
@@ -1527,15 +1529,15 @@ c
           ENDIF
 !  reltol for the NSSOLVE is the stop criterion on the outer loop
 !  reltolIn is (eps_GM, eps_CG) from the CompMech paper
-!  for now we are using 
+!  for now we are using
 !  Tolerance on ACUSIM Pressure Projection for CG and
 !  Tolerance on Momentum Equations for GMRES
 ! also using Kspaceand maxIters from setup for ACUSIM
 !
           eps_outer=40.0*epstol(1)  !following papers soggestion for now
           CALL svLS_LS_CREATE(svLS_ls, svLSType, dimKry=Kspace,
-     2      relTol=eps_outer, relTolIn=(/epstol(1),prestol/), 
-     3      maxItr=maxIters, 
+     2      relTol=eps_outer, relTolIn=(/epstol(1),prestol/),
+     3      maxItr=maxIters,
      4      maxItrIn=(/maxIters,maxIters/))
 
           CALL svLS_COMMU_CREATE(communicator, MPI_COMM_WORLD)
@@ -1544,13 +1546,13 @@ c
           IF  (ipvsq .GE. 2) THEN
 
 #if((VER_CORONARY == 1)&&(VER_CLOSEDLOOP == 1))
-               svLS_nFaces = 1 + numResistSrfs + numNeumannSrfs 
+               svLS_nFaces = 1 + numResistSrfs + numNeumannSrfs
      2            + numImpSrfs + numRCRSrfs + numCORSrfs
 #elif((VER_CORONARY == 1)&&(VER_CLOSEDLOOP == 0))
                svLS_nFaces = 1 + numResistSrfs
      2            + numImpSrfs + numRCRSrfs + numCORSrfs
 #elif((VER_CORONARY == 0)&&(VER_CLOSEDLOOP == 1))
-               svLS_nFaces = 1 + numResistSrfs + numNeumannSrfs 
+               svLS_nFaces = 1 + numResistSrfs + numNeumannSrfs
      2            + numImpSrfs + numRCRSrfs
 #else
                svLS_nFaces = 1 + numResistSrfs
@@ -1581,21 +1583,21 @@ c
                   IF (.NOT.BTEST(iBC(i),5)) sV(3,j) = 1D0
                END IF
           END DO
-          CALL svLS_BC_CREATE(svLS_lhs, faIn, facenNo, 
+          CALL svLS_BC_CREATE(svLS_lhs, faIn, facenNo,
      2         nsd, BC_TYPE_Dir, gNodes, sV)
           DEALLOCATE(gNodes)
           DEALLOCATE(sV)
-! else of ifdef svLS_1 
+! else of ifdef svLS_1
 #else
           if(myrank.eq.0) write(*,*) 'your input requests svLS but your cmake did not build for it'
-          call error('itrdrv  ','nosVLS',svLSFlag)  
-! endif of ifdef svLS_1 
+          call error('itrdrv  ','nosVLS',svLSFlag)
+! endif of ifdef svLS_1
 #endif
         ENDIF !of svLS init. inside ifdef so we can trap above else
 ! note input_fform does not allow svLSFlag=1 AND leslib=1 so above or below only
         if(leslib.eq.1) then
 ! ifdef leslib_1 : setup for leslib
-#ifdef HAVE_LESLIB 
+#ifdef HAVE_LESLIB
 !--------------------------------------------------------------------
           call myfLesNew( lesId,   41994,
      &                 eqnType,
@@ -1604,14 +1606,14 @@ c
      &                 ipresPrjFlag,    nPresPrjs,      epstol(1),
      &                 prestol,        iverbose,        statsflow,
      &                 nPermDims,      nTmpDims,      servername  )
-          call aSDf  
+          call aSDf
           call readLesRestart( lesId,  aperm, nshg, myrank, lstep,
-     &                        nPermDims ) 
-! else leslib_1 
+     &                        nPermDims )
+! else leslib_1
 #else
           if(myrank.eq.0) write(*,*) 'your input requests leslib but your cmake did not build for it'
-          call error('itrdrv  ','nolslb',leslib)       
-! endif leslib_1 
+          call error('itrdrv  ','nolslb',leslib)
+! endif leslib_1
 #endif
         endif !leslib=1
 
@@ -1621,14 +1623,14 @@ c
       endif
 
 !Above is setup for flow now we do scalar
- 
+
       if(nsclrsol.gt.0) then
        do isolsc=1,nsclrsol ! this loop sets up unique data for each scalar solved
          lesId       = numeqns(isolsc+1)
          eqnType     = 2
          nDofs       = 1
-         isclpresPrjflag = 0        
-         nPresPrjs   = 0       
+         isclpresPrjflag = 0
+         nPresPrjs   = 0
          isclprjFlag     = 1
          indx=isolsc+2-nsolt ! complicated to keep epstol(2) for
                              ! temperature followed by scalars
@@ -1636,25 +1638,25 @@ c
 #ifdef HAVE_SVLS
          IF (svLSFlag .EQ. 1) THEN
            svLSType=2  !only option for scalars
-!  reltol for the GMRES is the stop criterion 
+!  reltol for the GMRES is the stop criterion
 ! also using Kspaceand maxIters from setup for ACUSIM
 !
-           CALL svLS_LS_CREATE(svLS_ls_S(isolsc), svLSType, 
+           CALL svLS_LS_CREATE(svLS_ls_S(isolsc), svLSType,
      2      dimKry=Kspace,
-     3      relTol=epstol(indx), 
-     4      maxItr=maxIters 
+     3      relTol=epstol(indx),
+     4      maxItr=maxIters
      5      )
 
-           CALL svLS_COMMU_CREATE(communicator_S(isolsc), 
+           CALL svLS_COMMU_CREATE(communicator_S(isolsc),
      2       MPI_COMM_WORLD)
-           
+
            svLS_nFaces = 1   !not sure about this...should try it with zero
 
-           CALL svLS_LHS_CREATE(svLS_lhs_S(isolsc), 
+           CALL svLS_LHS_CREATE(svLS_lhs_S(isolsc),
      2         communicator_S(isolsc), gnNo, nNo,
      3         nnz_tot, ltg, colm, rowp, svLS_nFaces)
-           
- 
+
+
               faIn = 1
               facenNo = 0
               ib=5+isolsc
@@ -1671,14 +1673,14 @@ c
                END IF
               END DO
 
-           CALL svLS_BC_CREATE(svLS_lhs_S(isolsc), faIn, facenNo, 
+           CALL svLS_BC_CREATE(svLS_lhs_S(isolsc), faIn, facenNo,
      2         1, BC_TYPE_Dir, gNodes, sV(1,:))
            DEALLOCATE(gNodes)
            DEALLOCATE(sV)
 
          ENDIF  !svLS handing scalar solve
-#endif        
-        
+#endif
+
 
 #ifdef HAVE_LESLIB
          if (leslib.eq.1) then
@@ -1705,11 +1707,11 @@ c
         include "common.h"
             icomputevort = 0
             if (ivort == 1) then ! Print vorticity = True in solver.inp
-              ! We then compute the vorticity only if we 
+              ! We then compute the vorticity only if we
               ! 1) we write an intermediate checkpoint
               ! 2) we reach the last time step and write the last checkpoint
               ! 3) we accumulate statistics in ybar for every time step
-              ! BEWARE: we need here lstep+1 and istep+1 because the lstep and 
+              ! BEWARE: we need here lstep+1 and istep+1 because the lstep and
               ! istep gets incremened after the flowsolve, further below
               if (((irs .ge. 1) .and. (mod(lstep+1, ntout) .eq. 0)) .or.
      &                   istep+1.eq.nstep(itseq) .or. ioybar == 1) then
@@ -1727,7 +1729,7 @@ c
         include "common.h"
 
         real*8 gradV(nshg,nsdsq), strain(nshg,6), vorticity(nshg,5)
- 
+
               ! vorticity components and magnitude
               vorticity(:,1) = GradV(:,8)-GradV(:,6) !omega_x
               vorticity(:,2) = GradV(:,3)-GradV(:,7) !omega_y
@@ -1742,7 +1744,7 @@ c
               strain(:,4) = GradV(:,5)                  !S22
               strain(:,5) = 0.5*(GradV(:,6)+GradV(:,8)) !S23
               strain(:,6) = GradV(:,9)                  !S33
- 
+
               vorticity(:,5) = 0.25*( vorticity(:,4)*vorticity(:,4)  !Q
      &                            - 2.0*(      strain(:,1)*strain(:,1)
      &                                    + 2* strain(:,2)*strain(:,2)
@@ -1760,8 +1762,8 @@ c
       include "mpif.h"
        character*60    fvarts
        character*10    cname2
-   
-                  
+
+
                   if (numpe > 1) then
                      do jj = 1, ntspts
                         vartssoln((jj-1)*ndof+1:jj*ndof)=varts(jj,:)
@@ -1776,7 +1778,7 @@ c
 !     &                    MPI_COMM_WORLD, ierr)
 
                      call MPI_BARRIER(MPI_COMM_WORLD, ierr)
-                     call MPI_ALLREDUCE(vartssoln, vartssolng, 
+                     call MPI_ALLREDUCE(vartssoln, vartssolng,
      &                    ndof*ntspts,
      &                    MPI_DOUBLE_PRECISION, MPI_SUM,
      &                    MPI_COMM_WORLD, ierr)
@@ -1793,7 +1795,7 @@ c
 !                     if (myrank.eq.zero) then
                      do jj = 1, ntspts
 
-                        if(myrank .eq. iv_rank(jj)) then 
+                        if(myrank .eq. iv_rank(jj)) then
                            ! No need to update all varts components, only the one treated by the expected rank
                            ! Note: keep varts as a vector, as multiple probes could be treated by one rank
                            indxvarts = (jj-1)*ndof
@@ -1812,11 +1814,11 @@ c
                   do jj = 1, ntspts
                      if(myrank .eq. iv_rank(jj)) then
                         ifile = 1000+jj
-                        write(ifile,555) lstep, (varts(jj,k),k=1,ndof) !Beware of format 555 - check ndof 
+                        write(ifile,555) lstep, (varts(jj,k),k=1,ndof) !Beware of format 555 - check ndof
 c                        call flush(ifile)
-                        if (((irs .ge. 1) .and. 
+                        if (((irs .ge. 1) .and.
      &                       (mod(lstep, ntout) .eq. 0))) then
-                           close(ifile)                     
+                           close(ifile)
                            fvarts='varts/varts'
                            fvarts=trim(fvarts)//trim(cname2(jj))
                            fvarts=trim(fvarts)//trim(cname2(lskeep))
@@ -1833,7 +1835,7 @@ c                        call flush(ifile)
 
 
 !555              format(i6,5(2x,E12.5e2))
-555               format(i6,6(2x,E20.12e2)) !assuming ndof = 6 here 
+555               format(i6,6(2x,E20.12e2)) !assuming ndof = 6 here
 
       return
       end subroutine
@@ -1906,19 +1908,19 @@ c u^2, v^2, w^2, p^2 and cross terms of uv, uw and vw
      &                         (one-tfact)*ybar(:,12)
                   if(nsclr.gt.0) !nut
      &             ybar(:,13) = tfact*yold(:,6) + (one-tfact)*ybar(:,13)
-                  
+
                   if(ivort == 1) then !vorticity
-                    ybar(:,14) = tfact*vorticity(:,1) + 
+                    ybar(:,14) = tfact*vorticity(:,1) +
      &                           (one-tfact)*ybar(:,14)
-                    ybar(:,15) = tfact*vorticity(:,2) + 
+                    ybar(:,15) = tfact*vorticity(:,2) +
      &                           (one-tfact)*ybar(:,15)
-                    ybar(:,16) = tfact*vorticity(:,3) + 
+                    ybar(:,16) = tfact*vorticity(:,3) +
      &                           (one-tfact)*ybar(:,16)
-                    ybar(:,17) = tfact*vorticity(:,4) + 
+                    ybar(:,17) = tfact*vorticity(:,4) +
      &                           (one-tfact)*ybar(:,17)
                   endif
 
-                  if(abs(itwmod).ne.1 .and. iowflux.eq.1) then 
+                  if(abs(itwmod).ne.1 .and. iowflux.eq.1) then
                     wallssVecBar(:,1) = tfact*wallssVec(:,1)
      &                                  +(one-tfact)*wallssVecBar(:,1)
                     wallssVecBar(:,2) = tfact*wallssVec(:,2)
@@ -1971,46 +1973,46 @@ c beginning of cycle is considered as ncycles_startphaseavg*nstepsincycle+1
                      yphbar(:,5,iphase-1) = tfactphase*sqrt(yold(:,1)**2
      &                          +yold(:,2)**2+yold(:,3)**2) +
      &                          (one-tfactphase)*yphbar(:,5,iphase-1)
-                     yphbar(:,6,iphase-1) = 
-     &                              tfactphase*yold(:,1)*yold(:,1) 
+                     yphbar(:,6,iphase-1) =
+     &                              tfactphase*yold(:,1)*yold(:,1)
      &                           +(one-tfactphase)*yphbar(:,6,iphase-1)
 
-                     yphbar(:,7,iphase-1) = 
+                     yphbar(:,7,iphase-1) =
      &                              tfactphase*yold(:,1)*yold(:,2)
      &                           +(one-tfactphase)*yphbar(:,7,iphase-1)
 
-                     yphbar(:,8,iphase-1) = 
+                     yphbar(:,8,iphase-1) =
      &                              tfactphase*yold(:,1)*yold(:,3)
      &                           +(one-tfactphase)*yphbar(:,8,iphase-1)
 
-                     yphbar(:,9,iphase-1) = 
+                     yphbar(:,9,iphase-1) =
      &                              tfactphase*yold(:,2)*yold(:,2)
      &                           +(one-tfactphase)*yphbar(:,9,iphase-1)
 
-                     yphbar(:,10,iphase-1) = 
+                     yphbar(:,10,iphase-1) =
      &                              tfactphase*yold(:,2)*yold(:,3)
      &                           +(one-tfactphase)*yphbar(:,10,iphase-1)
 
-                     yphbar(:,11,iphase-1) = 
+                     yphbar(:,11,iphase-1) =
      &                              tfactphase*yold(:,3)*yold(:,3)
      &                           +(one-tfactphase)*yphbar(:,11,iphase-1)
 
                      if(ivort == 1) then
-                       yphbar(:,12,iphase-1) = 
+                       yphbar(:,12,iphase-1) =
      &                              tfactphase*vorticity(:,1)
      &                           +(one-tfactphase)*yphbar(:,12,iphase-1)
-                       yphbar(:,13,iphase-1) = 
+                       yphbar(:,13,iphase-1) =
      &                              tfactphase*vorticity(:,2)
      &                           +(one-tfactphase)*yphbar(:,13,iphase-1)
-                       yphbar(:,14,iphase-1) = 
+                       yphbar(:,14,iphase-1) =
      &                              tfactphase*vorticity(:,3)
      &                           +(one-tfactphase)*yphbar(:,14,iphase-1)
-                       yphbar(:,15,iphase-1) = 
+                       yphbar(:,15,iphase-1) =
      &                              tfactphase*vorticity(:,4)
      &                           +(one-tfactphase)*yphbar(:,15,iphase-1)
                     endif
                   endif !compute phase average
-      endif !if(nphasesincycle.eq.0 .or. istep.gt.ncycles_startphaseavg*nstepsincycle) 
+      endif !if(nphasesincycle.eq.0 .or. istep.gt.ncycles_startphaseavg*nstepsincycle)
 c
 c compute rms
 c
@@ -2022,4 +2024,3 @@ c
       endif
       return
       end subroutine
-

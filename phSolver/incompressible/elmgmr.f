@@ -1,13 +1,13 @@
-        subroutine ElmGMR (u,         y,         ac,        x,     
+        subroutine ElmGMR (u,         y,         ac,        x,
      &                     shp,       shgl,      iBC,
-     &                     BC,        shpb,      shglb,
+     &                     BC,        shpb,      shglb, C,
      &                     res,       iper,      ilwork,
-     &                     rowp,      colm,     lhsK,      
+     &                     rowp,      colm,     lhsK,
      &                     lhsP,      rerr,     GradV)
 c
 c----------------------------------------------------------------------
 c
-c This routine computes the LHS mass matrix, the RHS residual 
+c This routine computes the LHS mass matrix, the RHS residual
 c vector, and the preconditioning matrix, for use with the GMRES
 c solver.
 c
@@ -18,7 +18,7 @@ c Irene Vignon, Spring 2004.
 c----------------------------------------------------------------------
 c
         use pvsQbi  ! brings in NABI
-        use stats   !  
+        use stats   !
         use pointer_data  ! brings in the pointers for the blocked arrays
         use local_mass
         use timedata
@@ -27,16 +27,17 @@ c
 c
         dimension y(nshg,ndof),         ac(nshg,ndof),
      &            u(nshg,nsd),
-     &            x(numnp,nsd),               
-     &            iBC(nshg),           
-     &            BC(nshg,ndofBC),  
+     &            x(numnp,nsd),
+     &            iBC(nshg),
+     &            BC(nshg,ndofBC),
      &            res(nshg,nflow),
      &            iper(nshg)
 c
-        dimension shp(MAXTOP,maxsh,MAXQPT),  
-     &            shgl(MAXTOP,nsd,maxsh,MAXQPT), 
+        dimension shp(MAXTOP,maxsh,MAXQPT),
+     &            shgl(MAXTOP,nsd,maxsh,MAXQPT),
      &            shpb(MAXTOP,maxsh,MAXQPT),
-     &            shglb(MAXTOP,nsd,maxsh,MAXQPT) 
+     &            shglb(MAXTOP,nsd,maxsh,MAXQPT),
+     &            C(num_elem_1D, ipord+1,ipord+1)
 c
         dimension qres(nshg,idflx),     rmass(nshg)
         dimension GradV(nshg,nsdsq)
@@ -80,7 +81,7 @@ c
              GradV = zero
            endif
            rmass = zero
-        
+
            do iblk = 1, nelblk
               iel    = lcblk(1,iblk)
               lelCat = lcblk(2,iblk)
@@ -91,37 +92,37 @@ c
               mattyp = lcblk(7,iblk)
               ndofl  = lcblk(8,iblk)
               nsymdl = lcblk(9,iblk)
-              npro   = lcblk(1,iblk+1) - iel 
+              npro   = lcblk(1,iblk+1) - iel
               ngauss = nint(lcsyst)
-c     
+c
 c.... compute and assemble diffusive flux vector residual, qres,
 c     and lumped mass matrix, rmass
 
             if(iter == nitr .and. icomputevort == 1 ) then
                !write(*,*) 'Calling AsIqGradV'
                call AsIqGradV (y,                x,
-     &                   shp(lcsyst,1:nshl,:), 
+     &                   shp(lcsyst,1:nshl,:),
      &                   shgl(lcsyst,:,1:nshl,:),
      &                   mien(iblk)%p,
      &                   GradV)
              endif
-              call AsIq (y,                x,                       
-     &                   shp(lcsyst,1:nshl,:), 
+              call AsIq (y,                x,
+     &                   shp(lcsyst,1:nshl,:),
      &                   shgl(lcsyst,:,1:nshl,:),
-     &                   mien(iblk)%p,     mxmudmi(iblk)%p,  
+     &                   mien(iblk)%p,     mxmudmi(iblk)%p,
      &                   qres,             rmass )
            enddo
-       
+
 c
 c.... form the diffusive flux approximation
 c
-           call qpbc( rmass, qres, iBC, iper, ilwork )       
+           call qpbc( rmass, qres, iBC, iper, ilwork )
            if(iter == nitr .and. icomputevort == 1 ) then
              !write(*,*) 'Calling solveGradV'
              call solveGradV( rmass, GradV, iBC, iper, ilwork )
            endif
 c
-        endif 
+        endif
 c
 c.... -------------------->   interior elements   <--------------------
 c
@@ -149,7 +150,7 @@ c
           mattyp = lcblk(7,iblk)
           ndofl  = lcblk(8,iblk)
           nsymdl = lcblk(9,iblk)
-          npro   = lcblk(1,iblk+1) - iel 
+          npro   = lcblk(1,iblk+1) - iel
           inum   = iel + npro - 1
           ngauss = nint(lcsyst)
 c
@@ -167,20 +168,20 @@ c
           tmpshgl(:,1:nshl,:) = shgl(lcsyst,:,1:nshl,:)
 
           call AsIGMR (y,                   ac,
-     &                 x,                   mxmudmi(iblk)%p,      
-     &                 tmpshp, 
-     &                 tmpshgl,
+     &                 x,                   mxmudmi(iblk)%p,
+     &                 shp,
+     &                 shgl, C
      &                 mien(iblk)%p,
      &                 res,
      &                 qres,                xKebe,
      &                 xGoC,                rerr)
 c
 c.... satisfy the BC's on the implicit LHS
-c     
+c
           if (impl(1) .ne. 9 .and. lhs .eq. 1) then
-             if(ipord.eq.1) 
-     &         call bc3lhs (iBC, BC,mien(iblk)%p, xKebe)  
-             call fillsparseI (mien(iblk)%p, 
+             if(ipord.eq.1)
+     &         call bc3lhs (iBC, BC,mien(iblk)%p, xKebe)
+             call fillsparseI (mien(iblk)%p,
      &                 xKebe,            lhsK,
      &                 xGoC,             lhsP,
      &                 rowp,                      colm)
@@ -196,7 +197,7 @@ c
        enddo
 c$$$       if(ibksiz.eq.20 .and. iwrote.ne.789) then
 c$$$          do i=1,nshg
-c$$$             write(789,*) 'eqn block ',i 
+c$$$             write(789,*) 'eqn block ',i
 c$$$             do j=colm(i),colm(i+1)-1
 c$$$                write(789,*) 'var block',rowp(j)
 c$$$
@@ -219,7 +220,7 @@ c
        have_local_mass = 1
 c
 c.... time average statistics
-c       
+c
        if ( stsResFlg .eq. 1 ) then
 
           if (numpe > 1) then
@@ -231,7 +232,7 @@ c
                 stsVec(i,:) = stsVec(i,:) + stsVec(j,:)
              endif
           enddo
-c     
+c
           do i = 1,nshg
              stsVec(i,:) = stsVec(iper(i),:)
           enddo
@@ -240,7 +241,7 @@ c
              call commu (stsVec, ilwork, nResDims  , 'out')
           endif
           return
-          
+
        endif
 c
 c.... -------------------->   boundary elements   <--------------------
@@ -261,7 +262,7 @@ c
           nshlb  = lcblkb(10,iblk)
           mattyp = lcblkb(7,iblk)
           ndofl  = lcblkb(8,iblk)
-          npro   = lcblkb(1,iblk+1) - iel 
+          npro   = lcblkb(1,iblk+1) - iel
 
 
           if(lcsyst.eq.3) lcsyst=nenbl
@@ -276,14 +277,14 @@ c.... allocate the element matrices
 c
           allocate ( xKebe(npro,9,nshl,nshl) )
           allocate ( xGoC (npro,4,nshl,nshl) )
-          
+
 c
-c.... compute and assemble the residuals corresponding to the 
+c.... compute and assemble the residuals corresponding to the
 c     boundary integral
 c
           allocate (tmpshpb(nshl,MAXQPT))
           allocate (tmpshglb(nsd,nshl,MAXQPT))
-          
+
           tmpshpb(1:nshl,:) = shpb(lcsyst,1:nshl,:)
           tmpshglb(:,1:nshl,:) = shglb(lcsyst,:,1:nshl,:)
 
@@ -298,7 +299,7 @@ c
 c
 c.... satisfy (again, for the vessel wall contributions) the BC's on the implicit LHS
 c
-c.... first, we need to make xGoC zero, since it doesn't have contributions from the 
+c.... first, we need to make xGoC zero, since it doesn't have contributions from the
 c.... vessel wall elements
 
           xGoC = zero
@@ -327,9 +328,9 @@ c....  pressure vs. resistance boundary condition sets pressure at
 c      outflow to linearly increase as flow through that face increases
 c      (routine is at bottom of this file)
 c
-          call ElmpvsQ (res,y,-1.0d0)     
+          call ElmpvsQ (res,y,-1.0d0)
        endif
-           
+
 c
 c before the commu we need to rotate the residual vector for axisymmetric
 c boundary conditions (so that off processor periodicity is a dof add instead
@@ -365,7 +366,7 @@ c      call timer ('Back    ')
 !********************************************************************
 !--------------------------------------------------------------------
 
-      subroutine ElmGMRSclr (y,         ac,        x,     
+      subroutine ElmGMRSclr (y,         ac,        x,
      &                       shp,       shgl,      iBC,
      &                       BC,        shpb,      shglb,
      &                       res,       iper,      ilwork,
@@ -373,7 +374,7 @@ c      call timer ('Back    ')
 c
 c----------------------------------------------------------------------
 c
-c This routine computes the LHS mass matrix, the RHS residual 
+c This routine computes the LHS mass matrix, the RHS residual
 c vector, and the preconditioning matrix, for use with the GMRES
 c solver.
 c
@@ -386,14 +387,14 @@ c
         include "mpif.h"
 c
         dimension y(nshg,ndof),         ac(nshg,ndof),
-     &            x(numnp,nsd),         iBC(nshg),           
+     &            x(numnp,nsd),         iBC(nshg),
      &            BC(nshg,ndofBC),      res(nshg),
      &            iper(nshg)
 c
-        dimension shp(MAXTOP,maxsh,MAXQPT),  
-     &            shgl(MAXTOP,nsd,maxsh,MAXQPT), 
+        dimension shp(MAXTOP,maxsh,MAXQPT),
+     &            shgl(MAXTOP,nsd,maxsh,MAXQPT),
      &            shpb(MAXTOP,maxsh,MAXQPT),
-     &            shglb(MAXTOP,nsd,maxsh,MAXQPT) 
+     &            shglb(MAXTOP,nsd,maxsh,MAXQPT)
 c
         dimension qres(nshg,nsd),     rmass(nshg)
 c
@@ -419,7 +420,7 @@ c of the diffusive flux vector, q, and lumped mass matrix, rmass
 c
            qres = zero
            rmass = zero
-        
+
            do iblk = 1, nelblk
               iel    = lcblk(1,iblk)
               lcsyst = lcblk(3,iblk)
@@ -427,27 +428,27 @@ c
               nshl   = lcblk(10,iblk)
               mattyp = lcblk(7,iblk)
               ndofl  = lcblk(8,iblk)
-              npro   = lcblk(1,iblk+1) - iel 
-              
+              npro   = lcblk(1,iblk+1) - iel
+
               ngauss = nint(lcsyst)
-c     
+c
 c.... compute and assemble diffusive flux vector residual, qres,
 c     and lumped mass matrix, rmass
 
-              call AsIqSclr (y,                   x,                       
-     &                       shp(lcsyst,1:nshl,:), 
+              call AsIqSclr (y,                   x,
+     &                       shp(lcsyst,1:nshl,:),
      &                       shgl(lcsyst,:,1:nshl,:),
-     &                       mien(iblk)%p,     qres,                   
+     &                       mien(iblk)%p,     qres,
      &                       rmass )
-       
+
            enddo
-       
+
 c
 c.... form the diffusive flux approximation
 c
-           call qpbcSclr ( rmass, qres, iBC, iper, ilwork )       
+           call qpbcSclr ( rmass, qres, iBC, iper, ilwork )
 c
-        endif 
+        endif
 c
 c.... -------------------->   interior elements   <--------------------
 c
@@ -483,15 +484,15 @@ c.... compute and assemble the residual and tangent matrix
 c
           call AsIGMRSclr(y,                   ac,
      &                 x,
-     &                 shp(lcsyst,1:nshl,:), 
+     &                 shp(lcsyst,1:nshl,:),
      &                 shgl(lcsyst,:,1:nshl,:),
      &                 mien(iblk)%p,        res,
      &                 qres,                xSebe, mxmudmi(iblk)%p )
 c
 c.... satisfy the BC's on the implicit LHS
-c     
+c
           if (impl(1) .ne. 9 .and. lhs .eq. 1) then
-             call fillsparseSclr (mien(iblk)%p, 
+             call fillsparseSclr (mien(iblk)%p,
      &                 xSebe,             lhsS,
      &                 rowp,              colm)
           endif
@@ -552,7 +553,7 @@ c
      &              miBCB(iblk)%p,  mBCB(iblk)%p)
 
 c
-c.... compute and assemble the residuals corresponding to the 
+c.... compute and assemble the residuals corresponding to the
 c     boundary integral
 c
           call AsBSclr (y,                       x,
@@ -587,12 +588,12 @@ CAD      call timer ('Back    ')
       return
       end
 
-        
+
 c
 c....routine to compute and return the flow rates for coupled surfaces of a given type
-c        
+c
       subroutine GetFlowQ (qsurf,y,srfIdList,numSrfs)
-        
+
       use pvsQbi  ! brings in NABI
 c
       include "common.h"
@@ -605,25 +606,25 @@ c
 c note we only need the first three entries (u) from y
 
       qsurfProc=zero
-      
+
       do i = 1,nshg
-      
+
         if(numSrfs.gt.zero) then
           do k = 1,numSrfs
             irankCoupled = 0
             if (srfIdList(k).eq.ndsurf(i)) then
               irankCoupled=k
-              do j = 1,3              
+              do j = 1,3
                  qsurfProc(irankCoupled) = qsurfProc(irankCoupled)
      &                            + NABI(i,j)*y(i,j)
               enddo
               exit
-            endif      
-          enddo       
+            endif
+          enddo
         endif
-      
+
       enddo
-c      
+c
 c     at this point, each qsurf has its "nodes" contributions to Q
 c     accumulated into qsurf. Note, because NABI is on processor this
 c     will NOT be Q for the surface yet
@@ -640,12 +641,12 @@ c
        if(impistat.gt.0) rmpitmr = TMRC()
        call MPI_ALLREDUCE (qsurfProc, qsurf(:), npars,
      &        MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD,ierr)
-       if(impistat.eq.1) then 
+       if(impistat.eq.1) then
          rAllR = rAllR+TMRC()-rmpitmr
        elseif(impistat.eq.2) then
          rAllRScal = rAllRScal+TMRC()-rmpitmr
        endif
-  
+
 c
 c.... return
 c
@@ -653,11 +654,11 @@ c
       end
 
 
-        
+
 c
 c... routine to couple pressure with flow rate for each coupled surface
 c
-      subroutine ElmpvsQ (res,y,sign)     
+      subroutine ElmpvsQ (res,y,sign)
 
       use pvsQbi  ! brings in NABI
       use convolImpFlow !brings in the current part of convol coef for imp BC
@@ -672,35 +673,35 @@ c
 
 c
 c... get p for the resistance BC
-c           
+c
       if(numResistSrfs.gt.zero) then
-        call GetFlowQ(p,y,nsrflistResist,numResistSrfs)  !Q pushed into p but at this point 
+        call GetFlowQ(p,y,nsrflistResist,numResistSrfs)  !Q pushed into p but at this point
                           ! p is just the full Q for each surface
         p(:)=sign*p(:)*ValueListResist(:) ! p=QR  now we have the true pressure on each
                                         ! outflow surface.  Note sign is -1
                                         ! for RHS, +1 for LHS
 c
 c....  multiply it by integral NA n_i
-c     
+c
        do i = 1,nshg
           do k = 1,numResistSrfs
               irankCoupled = 0
-              if (nsrflistResist(k).eq.ndsurf(i)) then 
+              if (nsrflistResist(k).eq.ndsurf(i)) then
                   irankCoupled=k
-                  res(i,1:3)=res(i,1:3) + p(irankCoupled)*NABI(i,1:3)     
-                  exit 
+                  res(i,1:3)=res(i,1:3) + p(irankCoupled)*NABI(i,1:3)
+                  exit
               endif
-          enddo   
+          enddo
        enddo
-       
+
       endif !end of coupling for Resistance BC
 
-      
+
 c
 c... get p for the impedance BC
-c     
+c
       if(numImpSrfs.gt.zero) then
-        call GetFlowQ(p,y,nsrflistImp,numImpSrfs)  !Q pushed into p but at this point 
+        call GetFlowQ(p,y,nsrflistImp,numImpSrfs)  !Q pushed into p but at this point
                           ! p is just the full Q for each surface
         do j = 1,numImpSrfs
             if(sign.lt.zero) then ! RHS so -1
@@ -709,59 +710,52 @@ c
                 p(j)= sign*p(j)*ImpConvCoef(ntimeptpT+2,j)
             endif
         enddo
-             
+
 c
 c....  multiply it by integral NA n_i
-c     
+c
        do i = 1,nshg
           do k = 1,numImpSrfs
               irankCoupled = 0
-              if (nsrflistImp(k).eq.ndsurf(i)) then 
-                  irankCoupled=k
-                  res(i,1:3)=res(i,1:3) + p(irankCoupled)*NABI(i,1:3)      
-                  exit
-              endif
-          enddo   
-       enddo
-       
-      endif !end of coupling for Impedance BC
-c
-c... get p for the RCR BC
-c     
-      if(numRCRSrfs.gt.zero) then
-        call GetFlowQ(p,y,nsrflistRCR,numRCRSrfs)  !Q pushed into p but at this point 
-                          ! p is just the full Q for each surface
-        do j = 1,numRCRSrfs
-            if(sign.lt.zero) then ! RHS so -1
-                p(j)= sign*(poldRCR(j) + p(j)*RCRConvCoef(lstep+2,j)) !pressure p=pold+ Qbet
-                p(j)= p(j) - HopRCR(j) ! H operator contribution 
-            elseif(sign.gt.zero) then ! LHS so sign is positive
-                p(j)= sign*p(j)*RCRConvCoef(lstep+2,j)
-            endif
-        enddo
-             
-c
-c....  multiply it by integral NA n_i
-c     
-       do i = 1,nshg
-          do k = 1,numRCRSrfs
-              irankCoupled = 0
-              if (nsrflistRCR(k).eq.ndsurf(i)) then 
+              if (nsrflistImp(k).eq.ndsurf(i)) then
                   irankCoupled=k
                   res(i,1:3)=res(i,1:3) + p(irankCoupled)*NABI(i,1:3)
                   exit
               endif
-          enddo   
+          enddo
        enddo
-       
+
+      endif !end of coupling for Impedance BC
+c
+c... get p for the RCR BC
+c
+      if(numRCRSrfs.gt.zero) then
+        call GetFlowQ(p,y,nsrflistRCR,numRCRSrfs)  !Q pushed into p but at this point
+                          ! p is just the full Q for each surface
+        do j = 1,numRCRSrfs
+            if(sign.lt.zero) then ! RHS so -1
+                p(j)= sign*(poldRCR(j) + p(j)*RCRConvCoef(lstep+2,j)) !pressure p=pold+ Qbet
+                p(j)= p(j) - HopRCR(j) ! H operator contribution
+            elseif(sign.gt.zero) then ! LHS so sign is positive
+                p(j)= sign*p(j)*RCRConvCoef(lstep+2,j)
+            endif
+        enddo
+
+c
+c....  multiply it by integral NA n_i
+c
+       do i = 1,nshg
+          do k = 1,numRCRSrfs
+              irankCoupled = 0
+              if (nsrflistRCR(k).eq.ndsurf(i)) then
+                  irankCoupled=k
+                  res(i,1:3)=res(i,1:3) + p(irankCoupled)*NABI(i,1:3)
+                  exit
+              endif
+          enddo
+       enddo
+
       endif !end of coupling for RCR BC
 
       return
       end
-
-
-
-
-
-
-
