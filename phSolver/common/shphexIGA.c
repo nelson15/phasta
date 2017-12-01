@@ -2,13 +2,18 @@
 //Build the data structures defining the structured grid IGA hex elements
 #include <FCMangle.h>
 
-int HexIGAShapeAndDrv(int p,double par[3],double N[],double dN[][3],
+int HexIGAShapeAndDrv(int p, int quadPtIndex, double N[], double dN[][1],
                       double C[][][]);
 
 #define shphexIGA FortranCInterface_GLOBAL_(shphexIGA, SHPHEXIGA)
-void shphexIGA(int *p, double par[], double N[], double dN[][3], double C[][][])
+void shphexIGA(int *p, int quadPtIndex, double N[], double dN[][1], double C[][][])
 {
 
-  HexIGAShapeAndDrv(*p,par,N,dN,C);
+  HexIGAShapeAndDrv(*p,quadPtIndex,N,dN);
+  vector<double> knot_vec;
+  double h = 1/(double)num_elem_1D;
+  knotVecCreate(num_elem_1D, *p, 0.0, 1.0, h, &knot_vec);
+  nshg = knot_vec.size() - p - 1;
+  Extraction_1D(nshg, p, knot_vec, C);
 
 }

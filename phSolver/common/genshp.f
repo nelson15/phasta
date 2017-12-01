@@ -1,4 +1,4 @@
-        subroutine genshp (shp, shgl, nshp, nblk, num_elem_1D)
+        subroutine genshp (shp, shgl, nshp, nblk, C)
 c
 c----------------------------------------------------------------------
 c
@@ -21,8 +21,8 @@ c
 c
 c.... get coord. system and element type
 c
-            lcsyst = lcblk(3,iblk)
-            nshl   = lcblk(10,iblk)
+            lcsyst = 6
+            nshl   = ipord+1
 c
 c.... generate the shape-functions in local coordinates
 c
@@ -63,8 +63,8 @@ c           ADDED BY COREY NELSON TO BUILD HEXIGA ELEMENT
 c
                maxnint=max(maxnint,nint(lcsyst))
             do i=1,nint(lcsyst)
-               call shphexIGA  (ipord, Qpt(2,1:3,i),shp(2,:,i),
-     &                       shgl(2,:,:,i), C)
+               call shphexIGA  (ipord, i,shp(6,:,i),
+     &                       shgl(6,:,:,i), C)
             enddo
 c
 c.... nonexistent element

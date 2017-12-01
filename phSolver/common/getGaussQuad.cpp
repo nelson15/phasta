@@ -1,5 +1,6 @@
 #include "run_functions.h"
-void getGaussQuad(vector<double>* quad_pt, vector<double>* quad_wt, int& num_quad, int p)
+void getGaussQuad(vector<double>* quad_pt, vector<double>* quad_wt,
+                  int& num_quad, int p)
 {
   if (p < 4) {
   		quad_pt->push_back(0.5*(-0.861136311594053) + 0.5);

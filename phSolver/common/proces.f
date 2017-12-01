@@ -27,16 +27,17 @@ c
      &            ac(nshg,ndof)
 c
 c.... shape function declarations
-c     
-        dimension shp(MAXTOP,maxsh,MAXQPT),  
-     &            shgl(MAXTOP,nsd,maxsh,MAXQPT), 
+c
+        dimension shp(MAXTOP,maxsh,MAXQPT),
+     &            shgl(MAXTOP,nsd,maxsh,MAXQPT),
+     &            C(num_elem_1D, ipord+1,ipord+1),
      &            shpb(MAXTOP,maxsh,MAXQPT),
-     &            shglb(MAXTOP,nsd,maxsh,MAXQPT) 
+     &            shglb(MAXTOP,nsd,maxsh,MAXQPT)
 c
 c  stuff for dynamic model s.w.avg and wall model
 c
 c        dimension ifath(numnp),    velbar(nfath,nflow),
-c     &            nsons(nfath) 
+c     &            nsons(nfath)
 
         dimension velbar(nfath,nflow)
 c
@@ -52,7 +53,7 @@ c
 c        if ((irscale .ge. 0) .and. (myrank.eq.master)) then
 c           call setSPEBC(numnp, point2nfath, nsonmax)
 c        endif
-c     
+c
 c.... generate the geometry and boundary conditions data
 c
         call gendat (y,              ac,             point2x,
@@ -68,13 +69,13 @@ c
                       ! of the strain rate tensor.
 
         call setrls   ! Allocating space for the resolved Leonard stresses
-c                         See bardmc.f 
+c                         See bardmc.f
         endif
 c
 c.... time averaged statistics
 c
         if (ioform .eq. 2) then
-           call initStats(point2x, iBC, point2iper, point2ilwork) 
+           call initStats(point2x, iBC, point2iper, point2ilwork)
         endif
 c
 c.... RANS turbulence model
@@ -86,7 +87,7 @@ c
 c.... p vs. Q boundary
 c
            call initNABI( point2x, shpb )
-c     
+c
 c.... check for execution mode
 c
         if (iexec .eq. 0) then
@@ -98,13 +99,13 @@ c
 c.... initialize AutoSponge
 c
         if(matflg(5,1).ge.4) then ! cool case (sponge)
-           call initSponge( y,point2x) 
+           call initSponge( y,point2x)
         endif
 c
 c
 c.... adjust BC's to interpolate from file
 c
-        
+
         inquire(file="inlet.dat",exist=exlog)
         if(exlog) then
            open (unit=654,file="inlet.dat",status="old")
@@ -131,31 +132,31 @@ c
                     write(*,*) 'failure in finterp, ynint=',d2wall(i)
                     stop
                  endif
-                 if(interp_mask(1).ne.zero) then 
+                 if(interp_mask(1).ne.zero) then
                     BC(i,1)=(xi*bcinterp(iupper,2)
      &                +(one-xi)*bcinterp(iupper-1,2))*interp_mask(1)
                  endif
-                 if(interp_mask(2).ne.zero) then 
+                 if(interp_mask(2).ne.zero) then
                     BC(i,2)=(xi*bcinterp(iupper,3)
      &                +(one-xi)*bcinterp(iupper-1,3))*interp_mask(2)
                  endif
-                 if(interp_mask(3).ne.zero) then 
+                 if(interp_mask(3).ne.zero) then
                     BC(i,3)=(xi*bcinterp(iupper,4)
      &                +(one-xi)*bcinterp(iupper-1,4))*interp_mask(3)
                  endif
-                 if(interp_masK(4).ne.zero) then 
+                 if(interp_masK(4).ne.zero) then
                     BC(i,4)=(xi*bcinterp(iupper,5)
      &                +(one-xi)*bcinterp(iupper-1,5))*interp_mask(4)
                  endif
-                 if(interp_mask(5).ne.zero) then 
+                 if(interp_mask(5).ne.zero) then
                     BC(i,5)=(xi*bcinterp(iupper,6)
      &                +(one-xi)*bcinterp(iupper-1,6))*interp_mask(5)
                  endif
-                 if(interp_mask(6).ne.zero) then 
+                 if(interp_mask(6).ne.zero) then
                     BC(i,7)=(xi*bcinterp(iupper,7)
      &                +(one-xi)*bcinterp(iupper-1,7))*interp_mask(6)
                  endif
-                 if(interp_mask(7).ne.zero) then 
+                 if(interp_mask(7).ne.zero) then
                     BC(i,8)=(xi*bcinterp(iupper,8)
      &                +(one-xi)*bcinterp(iupper-1,8))*interp_mask(7)
                  endif
@@ -165,24 +166,24 @@ c
 c$$$$$$$$$$$$$$$$$$$$
 
 !======================================================================
-!Modifications for Duct. Need to encapsulate in a function call. 
+!Modifications for Duct. Need to encapsulate in a function call.
         !specify an initial eddy viscosity ramp
         if(isetEVramp .gt. 0) then
           if(myrank .eq. 0) then
-            write(*,*) "Setting eddy viscosity ramp with:" 
+            write(*,*) "Setting eddy viscosity ramp with:"
             write(*,*) "  - ramp X min = ", EVrampXmin
             write(*,*) "  - ramp X max = ", EVrampXmax
             write(*,*) "  - EV min = ", EVrampMin
             write(*,*) "  - EV max = ", EVrampMax
           endif
-             
+
           x1 = EVrampXmin  !stuff in a shorter variable name to
           x2 = EVrampXmax  !make the formulas cleaner
           !Newton Divided differences to generate a polynomial of
           !the form P(x) = c0 + x*(c1 + x*(c2 + (x - (x2 - x1))*c3))
           !satisfying P(x1) = EVrampMin, P(x2) = EVrampMax,
           ! P'(x1) = 0, and P'(x2) = 0
-          
+
           c0 = EVrampMin
           c1 = 0            !zero derivative
           c2 = (EVrampMax - EVrampMin)/(x2 - x1)
@@ -190,15 +191,15 @@ c$$$$$$$$$$$$$$$$$$$$
           c3 = (c3 - c2)/(x2 - x1)
           c2 = (c2 - c1)/(x2 - x1)
           c3 = (c3 - c2)/(x2 - x1)
-          
+
           do nn = 1,nshg
             if(y(nn,6) .eq. 0) cycle  !don't change wall boundary conditions, should be iTurbWall == 1
-              
+
             if(point2x(nn,1) .gt. EVrampXmax) then !downstream of the ramp
               y(nn,6) = EVrampMax
             elseif(point2x(nn,1) .gt. EVrampXmin) then !and x(:,1) <= EVrampXmax
-             
-              !P(x) = c0 + x*(c1 + x*(c2 + (x - (x2 - x1))*c3)) 
+
+              !P(x) = c0 + x*(c1 + x*(c2 + (x - (x2 - x1))*c3))
               !     = c0 + x*(c1 + x*(c2 - (x2 - x1)*c3 + x*c3
               y(nn,6) = c0                 + (point2x(nn,1) - x1)*(
      &                  c1                 + (point2x(nn,1) - x1)*(
@@ -214,12 +215,12 @@ c
 c
 c.... call the semi-discrete predictor multi-corrector iterative driver
 c
-        call itrdrv (y,              ac,             
+        call itrdrv (y,              ac,
      &               uold,           point2x,
      &               iBC,            BC,
      &               point2iper,     point2ilwork,   shp,
      &               shgl,           shpb,           shglb,
-     &               point2ifath,    velbar,         point2nsons ) 
+     &               point2ifath,    velbar,         point2nsons )
 c
 c.... return
 c
@@ -269,5 +270,3 @@ CAD        write(6,*) 'Life: ', second(0) - ttim(100)
 
         return
         end
-
-

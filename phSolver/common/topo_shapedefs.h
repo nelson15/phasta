@@ -7,8 +7,8 @@ extern "C" double phiDrv(int p,double x);
 extern "C" int HexShapeAndDrv(int p, double par[3], double N[], double
 			      dN[][3]);
 //added IGA hex element Corey Nelson
-extern "C" int HexIGAShapeAndDrv(int p, double par[3], double N[], double
-			      dN[][3], double C[][][]);
+extern "C" int HexIGAShapeAndDrv(int p, int quadPtIndex,double N[],
+                                    double dN[][1]);
 extern "C" int WedgeShapeAndDrv(int p, double Inputpar[3], double N[], double
 				dN[][3]);
 extern "C" int PyrShapeAndDrv (int p, double Inputpar[3], double N[], double

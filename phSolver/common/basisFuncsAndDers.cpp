@@ -171,8 +171,6 @@ int BernsteinBasisAndDerivs2D(vector < array <double, 3> > * B,
 //    x = x value
 int bern(int i, int p, double x)
 {
-
-  double y;
   if (p == 0 && i == 1)
     return 1;
   else if (i < 1 || i > p+1)

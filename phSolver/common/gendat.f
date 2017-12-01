@@ -1,6 +1,6 @@
         subroutine gendat (y,       ac,       x,      iBC,     BC,
      &                     iper,    ilwork,
-     &                     shp,     shgl,    shpb,    shglb,
+     &                     shp,     shgl,  C,  shpb,    shglb,
      &                     ifath,   velbar,   nsons )
 c
 c----------------------------------------------------------------------
@@ -33,6 +33,7 @@ c.... shape function declarations
 c
         dimension shp(MAXTOP,maxsh,MAXQPT),
      &            shgl(MAXTOP,nsd,maxsh,MAXQPT),
+     &            C(num_elem_1D, ipord+1,ipord+1)
      &            shpb(MAXTOP,maxsh,MAXQPT),
      &            shglb(MAXTOP,nsd,maxsh,MAXQPT)
 c

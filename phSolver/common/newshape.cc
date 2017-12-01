@@ -417,10 +417,31 @@ int hex_regn(double xi[3],int p, double* entfn, double** edrv)
 ////////////////////////////////////////////////////////////////////////////////
 //build the shape functions, thier derivatives and the extraction operator
 //for IGA hex elements on a structured grid.
-int HexIGAShapeAndDrv(int p,double par[3],double N[],double dN[][3],
-                      double C[][][])
+// INPUTS
+//  p = polynomial Order
+//  par = idk...
+//  N[][] = value of basis functions in 1D size is [p+1][numQuadpts]
+//  dN[][] = derivative of basis functions in 1D size is [p+1][numQuadpts]
+//  C[][][] = extraction operators in 1D over each element, size
+//            [num_elem_1D][p+1][p+1]
+int HexIGAShapeAndDrv(int p, int quadPtIndex,double N[],double dN[][1])
 {
-  //get bernstein bases and their derivatives
+  double quadpt; //location of quad point
+  switch(quadPtIndex)
+  {
+    case 0: quadpt = 0.5*(-0.861136311594053) + 0.5; break;
+    case 1: quadpt = 0.5*(-0.339981043584856) + 0.5; break;
+    case 2: quadpt = 0.5*( 0.339981043584856) + 0.5; break;
+    case 3: quadpt = 0.5*( 0.861136311594053) + 0.5; break;
+    default: quadpt = 0; //this one is bad
+  }
+  for(int i = 1; i <= p+1; i++)
+  {
+    N[i-1] = bern(i,p,quadpt);
+    //derivatives of bernstein polys are linear combinations of lower degree
+    //bernstein polys
+    dN[i-1][1] = p*(bern(i-1, p-1,quadpt) - bern(i,p-1,quadpt));
+  }
 
 }
 
