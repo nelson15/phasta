@@ -61,7 +61,7 @@
 #define MAXTOP   6
 #define MAXQPT   125
 #define MAXSH    32
-#define NSD      1
+#define NSD      3
 #define num_elem_1D 16
 #define NSDSQ    9
 #define machin   'RS/6000'
