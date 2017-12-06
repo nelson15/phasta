@@ -99,7 +99,7 @@ c
 c
 c.... generate the interior nodal mapping
 c
-        call genshp ( shp, shgl, nshape, nelblk, num_elem_1D)
+        call genshp ( shp, shgl, nshape, nelblk, C)
 c
 c.... --------------------->  Boundary Conditions  <-------------------
 c

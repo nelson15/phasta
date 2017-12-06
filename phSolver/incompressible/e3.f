@@ -65,7 +65,7 @@ c
         dimension rlsl(npro,nshl,6),      rlsli(npro,6)
 
         real*8    rerrl(npro,nshl,6)
-        integer   aa
+        real*8    shpIGA(npro,nshl,ngauss),   shglIGA(npro,nsd,nshl,ngauss)
 
 c
 c
@@ -75,7 +75,7 @@ c
         if ( idiff==2 .and. ires .eq. 1 ) then
            call e3ql (yl,        dwl,       shp,       shgl, C,
      &                xl,        ql,        xmudmi,
-     &                sgn)
+     &                sgn,   shpIGA,       shglIGA)
         endif
 c
 c.... loop through the integration points
@@ -85,9 +85,12 @@ c
 
         if (Qwt(lcsyst,intp) .eq. zero) cycle          ! precaution
 c
+c    Include by Arvind Dudi Raghunath for the case of IGA hexes
+        call shpIGA(shp, shgl, C,shpIGA,shglIGA,xl)
+c
 c.... get the hierarchic shape functions at this int point
 c
-        call getshp(shp,          shgl,      C,   sgn, 
+        call getshp(shpIGA,       shglIGA,      C,   sgn,
      &              shpfun,       shdrv)
 c
 c.... get necessary fluid properties (including eddy viscosity)

@@ -27,23 +27,25 @@ c------------------------------------------------------------------------
       return
       end
 
-      subroutine getshp(shp, shgl, C, sgn, shape, shdrv)
+      subroutine getshp(shp, shgl, sgn, shape, shdrv)
 c------------------------------------------------------------------------
 c     returns the matrix of element shape functions with the higher
 c     order modes correctly negated at the current quadrature point.
 c------------------------------------------------------------------------
       include "common.h"
 
-      dimension shp(nshl,ngauss),   shgl(nsd,nshl,ngauss),
-     &          C(num_elem_1D, ipord+1,ipord+1),
+c      dimension shp(nshl,ngauss),   shgl(nsd,nshl,ngauss),
+      dimension shp(npro,nshl,ngauss),   shgl(npro,nsd,nshl,ngauss),
      &          sgn(npro,nshl),     shape(npro,nshl),
      &          shdrv(npro,nsd,nshl)
 
 
       do i=1,nenl
-         shape(:,i) = shp(i,intp)
+c         shape(:,i) = shp(i,intp)
+         shape(:,i) = shp(:,i,intp)
          do j=1,3
-            shdrv(:,j,i) = shgl(j,i,intp)
+c            shdrv(:,j,i) = shgl(j,i,intp)
+            shdrv(:,j,i) = shgl(:,j,i,intp)
          enddo
       enddo
       if ( ipord > 1 ) then
@@ -58,15 +60,14 @@ c------------------------------------------------------------------------
       return
       end
 
-      subroutine getshpb(shp, shgl, C, sgn, shape, shdrv)
+      subroutine getshpb(shp, shgl, sgn, shape, shdrv)
 c------------------------------------------------------------------------
 c     returns the matrix of element shape functions with the higher
 c     order modes correctly negated at the current quadrature point.
 c------------------------------------------------------------------------
       include "common.h"
 
-      dimension shp(nshl,ngaussb),  shgl(nsd,nshl,ngaussb),
-     &          C(num_elem_1D, ipord+1,ipord+1),
+       dimension shp(nshl,ngaussb),  shgl(nsd,nshl,ngaussb),
      &          sgn(npro,nshl),     shape(npro,nshl),
      &          shdrv(npro,nsd,nshl)
 

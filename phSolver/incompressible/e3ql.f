@@ -1,6 +1,6 @@
       subroutine e3ql (yl,      dwl,     shp,     shgl,
      &                 C, xl,      ql,      xmudmi,
-     &                 sgn )
+     &                 sgn,    shpIGA,       shglIGA )
 c
 c----------------------------------------------------------------------
 c
@@ -25,8 +25,10 @@ c
       dimension yl(npro,nshl,ndof),        dwl(npro,nshl),
      &          shp(nshl,ngauss),          shgl(nsd,nshl,ngauss),
      &          C(num_elem_1D, ipord+1,ipord+1),
-     &          xl(npro,nenl,nsd),         sgn(npro,nshl),
+     &          xl(npro,nenl,nsd),
      &          ql(npro,nshl,idflx), xmudmi(npro,ngauss)
+     &          sgn(npro,nshl),
+     &          shpIGA(npro,nshl,ngauss),   shglIGA(npro,nsd,nshl,ngauss)
 c
 c local arrays
 c
@@ -51,8 +53,10 @@ c
       qrl   = zero
 
       do intp = 1, ngauss
-
-         call getshp(shp, shgl, C, sgn, shape, shdrv)
+c    Include by Arvind Dudi Raghunath for the case of IGA hexes
+         call shpIGA(shp, shgl, C,shpIGA,shglIGA,xl)
+c
+         call getshp(shpIGA, shglIGA, C, sgn, shape, shdrv)
 
          qdi = zero
 c

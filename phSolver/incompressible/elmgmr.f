@@ -169,8 +169,8 @@ c
 
           call AsIGMR (y,                   ac,
      &                 x,                   mxmudmi(iblk)%p,
-     &                 shp,
-     &                 shgl, C
+     &                 tmpshp,
+     &                 tmpshgl, C
      &                 mien(iblk)%p,
      &                 res,
      &                 qres,                xKebe,

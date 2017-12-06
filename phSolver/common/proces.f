@@ -59,7 +59,7 @@ c
         call gendat (y,              ac,             point2x,
      &               iBC,            BC,
      &               point2iper,     point2ilwork,   shp,
-     &               shgl,           shpb,           shglb,
+     &               shgl, C,          shpb,           shglb,
      &               point2ifath,    velbar,         point2nsons )
         call setper(nshg)
         call perprep(iBC,point2iper,nshg)
