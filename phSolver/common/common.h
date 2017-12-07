@@ -92,7 +92,8 @@ c
       common /intpt/  Qpt (MAXTOP ,4,MAXQPT), Qwt (MAXTOP ,MAXQPT),
      &                Qptb(MAXTOP,4,MAXQPT),  Qwtb(MAXTOP,MAXQPT),
      &                nint(MAXTOP),           nintb(MAXTOP),
-     &                ngauss,                 ngaussb,   intp,
+c                  ngauss,                 ngaussb,   intp,
+     &                ngauss1D,   ngauss,        ngaussb,   intp,
      &                   maxnint
 
 c nsrflist is a binary switch that tells us if a given srfID should be
@@ -170,7 +171,8 @@ c
 
 c
         common /shpdat/ nshape, nshapeb, maxshb,
-     &                  nshl, nshlb,nfath,  ntopsh,  nsonmax
+c                       nshl, nshlb,nfath,  ntopsh,  nsonmax
+     &                  nshl,nshl1D, nshlb,nfath,  ntopsh,  nsonmax
 c
         common /melmcat/ mcsyst, melCat, nenCat(8,3),    nfaCat(8,3)
 c
