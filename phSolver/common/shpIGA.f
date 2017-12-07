@@ -1,4 +1,4 @@
-      subroutine shpIGA(shp, shgl, C,shpIGA,shglIGA,xl)
+      subroutine getshpIGA(shp, shgl, C,shpIGA,shglIGA,xl)
 
         include "common.h"
 c

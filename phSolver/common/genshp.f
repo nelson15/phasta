@@ -11,7 +11,7 @@ c
         include "common.h"
 c
         dimension shp(MAXTOP,maxsh,MAXQPT),
-     &            shgl(MAXTOP,nsd,maxsh,MAXQPT),
+     &            shgl(MAXTOP,1,maxsh,MAXQPT),
      &            C(num_elem_1D, ipord+1,ipord+1)
 c
 c.... loop through element blocks

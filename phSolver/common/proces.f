@@ -29,7 +29,7 @@ c
 c.... shape function declarations
 c
         dimension shp(MAXTOP,maxsh,MAXQPT),
-     &            shgl(MAXTOP,nsd,maxsh,MAXQPT),
+     &            shgl(MAXTOP,1,maxsh,MAXQPT),
      &            C(num_elem_1D, ipord+1,ipord+1),
      &            shpb(MAXTOP,maxsh,MAXQPT),
      &            shglb(MAXTOP,nsd,maxsh,MAXQPT)
