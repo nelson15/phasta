@@ -34,18 +34,15 @@ c     order modes correctly negated at the current quadrature point.
 c------------------------------------------------------------------------
       include "common.h"
 
-c      dimension shp(nshl,ngauss),   shgl(nsd,nshl,ngauss),
-      dimension shp(npro,nshl,ngauss),   shgl(npro,nsd,nshl,ngauss),
+      dimension shp(nshl,ngauss),   shgl(nsd,nshl,ngauss),
      &          sgn(npro,nshl),     shape(npro,nshl),
      &          shdrv(npro,nsd,nshl)
 
 
       do i=1,nenl
-c         shape(:,i) = shp(i,intp)
-         shape(:,i) = shp(:,i,intp)
+         shape(:,i) = shp(i,intp)
          do j=1,3
-c            shdrv(:,j,i) = shgl(j,i,intp)
-            shdrv(:,j,i) = shgl(:,j,i,intp)
+            shdrv(:,j,i) = shgl(j,i,intp)
          enddo
       enddo
       if ( ipord > 1 ) then

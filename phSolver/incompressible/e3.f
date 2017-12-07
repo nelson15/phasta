@@ -39,7 +39,7 @@ c
 c
         dimension yl(npro,nshl,ndof),
      &            acl(npro,nshl,ndof),
-     &            shp(nshl,ngauss),       shgl(nsd,nshl,ngauss),
+     &            shp(nshl1D,ngauss1D),       shgl(1,nshl1D,ngauss1D),
      &            C(num_elem_1D, ipord+1,ipord+1),
      &            xl(npro,nenl,nsd),      dwl(npro,nenl),
      &            rl(npro,nshl,nflow),     ql(npro,nshl,idflx)
@@ -65,8 +65,12 @@ c
         dimension rlsl(npro,nshl,6),      rlsli(npro,6)
 
         real*8    rerrl(npro,nshl,6)
-        real*8    shpIGA(npro,nshl,ngauss),   shglIGA(npro,nsd,nshl,ngauss)
+        real*8    shpIGA(nshl,ngauss),   shglIGA(nsd,nshl,ngauss)
 
+c
+c
+c    Include by Arvind Dudi Raghunath for the case of IGA hexes
+        call getshpIGA(shp, shgl, C,shpIGA,shglIGA,xl)
 c
 c
 c.... local reconstruction of diffusive flux vector for quadratics
@@ -80,14 +84,9 @@ c
 c
 c.... loop through the integration points
 c
-
         do intp = 1, ngauss
 
         if (Qwt(lcsyst,intp) .eq. zero) cycle          ! precaution
-c
-c    Include by Arvind Dudi Raghunath for the case of IGA hexes
-        call shpIGA(shp, shgl, C,shpIGA,shglIGA,xl)
-c
 c.... get the hierarchic shape functions at this int point
 c
         call getshp(shpIGA,       shglIGA,      C,   sgn,

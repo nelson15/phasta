@@ -24,8 +24,8 @@ c
         use turbsa      ! access to d2wall
         include "common.h"
 c
-        dimension y(nshg,ndof),               x(numnp,nsd),            
-     &            shp(nshl,ngauss),         shgl(nsd,nshl,ngauss),
+        dimension y(nshg,ndof),               x(numnp,nsd),
+     &            shp(nshl1D,ngauss1D),         shgl(1,nshl1D,ngauss1D),
      &            ien(npro,nshl),      dwl(npro,nenl),
      &            qres(nshg,idflx),    rmass(nshg)
 c
@@ -35,8 +35,8 @@ c
 c
         dimension sgn(npro,nshl)
 c
-c.... create the matrix of mode signs for the hierarchic basis 
-c     functions. 
+c.... create the matrix of mode signs for the hierarchic basis
+c     functions.
 c
         do i=1,nshl
            where ( ien(:,i) < 0 )
@@ -56,17 +56,17 @@ c
            call localx (d2wall,   dwl,     ien,    1,     'gather  ')
         endif
 c
-c.... get the element residuals 
+c.... get the element residuals
 c
         ql     = zero
         rmassl = zero
 
-        call e3q  (yl,         dwl,      shp,      shgl,    
+        call e3q  (yl,         dwl,      shp,      shgl,
      &             xl,         ql,       rmassl,
      &             xmudmi,     sgn  )
 
 c
-c.... assemble the diffusive flux residual 
+c.... assemble the diffusive flux residual
 c
         call local (qres,   ql,  ien,  idflx,  'scatter ')
         call local (rmass,  rmassl, ien,  1,          'scatter ')
@@ -86,18 +86,18 @@ c flux vector.
 c
 c----------------------------------------------------------------------
         subroutine AsIqSclr (y,       x,       shp,
-     &                       shgl,    ien,     qres,    
+     &                       shgl,    ien,     qres,
      &                       rmass    )
 c
         use turbsa      ! access to d2wall
         include "common.h"
 c
-        dimension y(nshg,ndof),             x(numnp,nsd),            
+        dimension y(nshg,ndof),             x(numnp,nsd),
      &            shp(nshl,ngauss),         shgl(nsd,nshl,ngauss),
      &            ien(npro,nshl),      dwl(npro,nenl),
      &            qres(nshg,nsd),           rmass(nshg)
 c
-        dimension yl(npro,nshl,ndof),       xl(npro,nenl,nsd),         
+        dimension yl(npro,nshl,ndof),       xl(npro,nenl,nsd),
      &            ql(npro,nshl,nsd),        rmassl(npro,nshl)
 c
         dimension sgn(npro,nshl)
@@ -114,17 +114,17 @@ c
            call localx (d2wall,   dwl,     ien,    1,     'gather  ')
         endif
 c
-c.... get the element residuals 
+c.... get the element residuals
 c
         ql     = zero
         rmassl = zero
 
-        call e3qSclr  (yl,      dwl,    shp,    shgl,    
-     &                 xl,      ql,     rmassl, 
+        call e3qSclr  (yl,      dwl,    shp,    shgl,
+     &                 xl,      ql,     rmassl,
      &                 sgn             )
 
 c
-c.... assemble the temperature diffusive flux residual 
+c.... assemble the temperature diffusive flux residual
 c
         call local (qres,   ql,  ien,  nsd,  'scatter ')
         call local (rmass,  rmassl, ien,  1, 'scatter ')
@@ -133,4 +133,3 @@ c.... end
 c
         return
         end
-

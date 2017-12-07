@@ -53,9 +53,7 @@ c
       qrl   = zero
 
       do intp = 1, ngauss
-c    Include by Arvind Dudi Raghunath for the case of IGA hexes
-         call shpIGA(shp, shgl, C,shpIGA,shglIGA,xl)
-c
+
          call getshp(shpIGA, shglIGA, C, sgn, shape, shdrv)
 
          qdi = zero

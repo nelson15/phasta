@@ -88,12 +88,17 @@ c
               lcsyst = lcblk(3,iblk)
               iorder = lcblk(4,iblk)
               nenl   = lcblk(5,iblk) ! no. of vertices per element
-              nshl   = lcblk(10,iblk)
+c              nshl   = lcblk(10,iblk)
+              nshl   = 64
+              nshl1D = 4
               mattyp = lcblk(7,iblk)
               ndofl  = lcblk(8,iblk)
               nsymdl = lcblk(9,iblk)
               npro   = lcblk(1,iblk+1) - iel
-              ngauss = nint(lcsyst)
+c              ngauss = nint(lcsyst)
+c CHECK ITH COREY FOR THIS IMPLEMENTATION
+             ngauss1D=  nint(lcsyst)
+             ngauss  = ngauss1D^3
 c
 c.... compute and assemble diffusive flux vector residual, qres,
 c     and lumped mass matrix, rmass
@@ -107,8 +112,8 @@ c     and lumped mass matrix, rmass
      &                   GradV)
              endif
               call AsIq (y,                x,
-     &                   shp(lcsyst,1:nshl,:),
-     &                   shgl(lcsyst,:,1:nshl,:),
+     &                   shp(lcsyst,1:nshl1D,:),
+     &                   shgl(lcsyst,:,1:nshl1D,:),
      &                   mien(iblk)%p,     mxmudmi(iblk)%p,
      &                   qres,             rmass )
            enddo
@@ -164,8 +169,8 @@ c
           allocate (tmpshp(nshl,MAXQPT))
           allocate (tmpshgl(nsd,nshl,MAXQPT))
 
-          tmpshp(1:nshl,:) = shp(lcsyst,1:nshl,:)
-          tmpshgl(:,1:nshl,:) = shgl(lcsyst,:,1:nshl,:)
+          tmpshp(1:nshl,:) = shp(lcsyst,1:nshl1D,:)
+          tmpshgl(:,1:nshl,:) = shgl(lcsyst,:,1:nshl1D,:)
 
           call AsIGMR (y,                   ac,
      &                 x,                   mxmudmi(iblk)%p,
@@ -290,8 +295,8 @@ c
 
           call AsBMFG (u,                       y,
      &                 ac,                      x,
-     &                 shp,
-     &                 shgl, C,
+     &                 shpb,
+     &                 shglb, C,
      &                 mienb(iblk)%p,           mmatb(iblk)%p,
      &                 miBCB(iblk)%p,           mBCB(iblk)%p,
      &                 res,                     xKebe)
