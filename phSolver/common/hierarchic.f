@@ -45,23 +45,24 @@ c we need to get the coords of that gauss point via
        j = (intp - k*ngauss1D*ngauss1D) / ngauss1D;
        i = intp - k*ngauss1D*ngauss1D - j*ngauss1D;
       do itr=1,ipord+1
-
-         shape(:,itr) = C(ID(:,1),:,:)*shp(itr,i)* C(ID(:,2),:,:)
+        do jtr = 1, ipord+1
+          shape(:,itr) += C1(:,itr,jtr)*shp(jtr,i)* C(ID(:,2),:,:)
      &                    *shp(itr,j)* C(ID(:,3),:,:)*shp(itr,k)
+        endo
          do jtr=1,3
             shdrv(:,jtr,itr) = shgl(j,i,intp)
          enddo
       enddo
-
-      if ( ipord > 1 ) then
-         do i=nenl+1,nshl
-            shape(:,i) = sgn(:,i) * shp(i,intp)
-            do j=1,3
-               shdrv(:,j,i) = shgl(j,i,intp)*sgn(:,i)
-            enddo
-         enddo
-      endif
-
+C
+C      if ( ipord > 1 ) then
+C         do i=nenl+1,nshl
+C            shape(:,i) = sgn(:,i) * shp(i,intp)
+C            do j=1,3
+C               shdrv(:,j,i) = shgl(j,i,intp)*sgn(:,i)
+C            enddo
+C         enddo
+C      endif
+C
       return
       end
 
