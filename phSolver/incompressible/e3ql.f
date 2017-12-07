@@ -28,7 +28,7 @@ c
      &          xl(npro,nenl,nsd),
      &          ql(npro,nshl,idflx), xmudmi(npro,ngauss)
      &          sgn(npro,nshl),
-     &          shpIGA(npro,nshl,ngauss),   shglIGA(npro,nsd,nshl,ngauss)
+     &          shpIGA(nshl,ngauss),   shglIGA(nsd,nshl,ngauss)
 c
 c local arrays
 c

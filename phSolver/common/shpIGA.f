@@ -13,7 +13,7 @@ c
         do i=1,ngauss1D
           do j=1,nsd1D
             Bez(i,:,j)=matmul(C(i,:,:),shp(:,j))
-            Bezg(j,i,:)=matmul(C(i,:,:),shgl(1,:,j))
+            Bezg(i,:,j)=matmul(C(i,:,:),shgl(1,:,j))
           enddo
         enddo
        call Asbshp(Bez,shpIGA)
