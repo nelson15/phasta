@@ -11,7 +11,7 @@ c  ien    (npro,nshl)      : nodal connectivity
 c  n                            : number of d.o.f.'s to be copied
 c  code                         : the transfer code
 c                                  .eq. 'gather  ', from global to local
-c                                  .eq. 'scatter ', add  local to global 
+c                                  .eq. 'scatter ', add  local to global
 c                                  .eq. 'globaliz', from local to global
 c
 c
@@ -24,7 +24,7 @@ c
      &            ien(npro,nshl),           ientmp(npro,nshl)
 c
         character*8 code
-        
+
 c
 c.... cubic basis has negatives in ien
 c
@@ -67,7 +67,7 @@ c
           do j = 1, n
             do i = 1, nshl
               do nel = 1,npro
-                global(ien(nel,i),j) = global(ien(nel,i),j) 
+                global(ien(nel,i),j) = global(ien(nel,i),j)
      &                               + rlocal(nel,i,j)
               enddo
             enddo
@@ -111,7 +111,7 @@ c.... end
 c
         end
 c
-        subroutine localx (global, rlocal, ien, n, code)
+        subroutine localx (global, rlocal, ien, n, code,C1,C2,C3)
 c
 c----------------------------------------------------------------------
 c
@@ -125,7 +125,7 @@ c  ien    (npro,nshl)      : nodal connectivity
 c  n                            : number of d.o.f.'s to be copied
 c  code                         : the transfer code
 c                                  .eq. 'gather  ', from global to local
-c                                  .eq. 'scatter ', add  local to global 
+c                                  .eq. 'scatter ', add  local to global
 c
 c
 c Zdenek Johan, Winter 1992.
@@ -137,6 +137,9 @@ c
      &            ien(npro,nshl)
 c
         character*8 code
+c
+        dimension C1(npro, ipord+1,ipord+1),C2(npro, ipord+1,ipord+1),
+     &            C3(npro, ipord+1,ipord+1),
 c
 c.... ------------------------>  'localization  '  <--------------------
 c
@@ -171,7 +174,7 @@ c
           do j = 1, n
             do i = 1, nenl
               do nel = 1,npro
-                global(ien(nel,i),j) = global(ien(nel,i),j) 
+                global(ien(nel,i),j) = global(ien(nel,i),j)
      &                               + rlocal(nel,i,j)
               enddo
             enddo
@@ -205,12 +208,12 @@ cc This routine assembles a global tangent matrix from the element
 cc matrices.
 cc
 cc
-cc 
+cc
 cc
 cc
 cc                         |  C      G^T |
 cc           globalK   =   |             |
-cc                         |  G      K   |   
+cc                         |  G      K   |
 cc
 cc
 cc
@@ -229,43 +232,43 @@ cc
 cc.... ------------------------->  'assembling '  <----------------------
 cc
 c
-cc     
+cc
 cc.... scatter the data (possible collisions)
 cc
 c
 cc
 cc.... k
-cc          
+cc
 c          do iel = 1, numel
 c
 c             do i = 1, nshl
 c                i0 = (i-1)*3
-cc                
+cc
 c                do j = 1, nshl
-c                   j0 = (j-1)*3 
+c                   j0 = (j-1)*3
 cc
 c                   ia = (ien(iel,i)-1)*4 + 1
-c                   ib = (ien(iel,j)-1)*4 + 1 
-cc                      
-c                   global(ia+1,ib+1) = global(ia+1,ib+1) 
+c                   ib = (ien(iel,j)-1)*4 + 1
+cc
+c                   global(ia+1,ib+1) = global(ia+1,ib+1)
 c     &                                       + xKebe(iel,i0+1,j0+1)
-c                   global(ia+1,ib+2) = global(ia+1,ib+2) 
+c                   global(ia+1,ib+2) = global(ia+1,ib+2)
 c     &                                       + xKebe(iel,i0+1,j0+2)
-c                   global(ia+1,ib+3) = global(ia+1,ib+3) 
+c                   global(ia+1,ib+3) = global(ia+1,ib+3)
 c     &                                       + xKebe(iel,i0+1,j0+3)
-c                   global(ia+2,ib+1) = global(ia+2,ib+1) 
+c                   global(ia+2,ib+1) = global(ia+2,ib+1)
 c     &                                       + xKebe(iel,i0+2,j0+1)
-c                   global(ia+2,ib+2) = global(ia+2,ib+2) 
+c                   global(ia+2,ib+2) = global(ia+2,ib+2)
 c     &                                       + xKebe(iel,i0+2,j0+2)
-c                   global(ia+2,ib+3) = global(ia+2,ib+3) 
+c                   global(ia+2,ib+3) = global(ia+2,ib+3)
 c     &                                       + xKebe(iel,i0+2,j0+3)
-c                   global(ia+3,ib+1) = global(ia+3,ib+1) 
+c                   global(ia+3,ib+1) = global(ia+3,ib+1)
 c     &                                       + xKebe(iel,i0+3,j0+1)
-c                   global(ia+3,ib+2) = global(ia+3,ib+2) 
+c                   global(ia+3,ib+2) = global(ia+3,ib+2)
 c     &                                       + xKebe(iel,i0+3,j0+2)
-c                   global(ia+3,ib+3) = global(ia+3,ib+3) 
+c                   global(ia+3,ib+3) = global(ia+3,ib+3)
 c     &                                       + xKebe(iel,i0+3,j0+3)
-cc                   
+cc
 c                enddo
 cc
 c             enddo
@@ -274,16 +277,16 @@ c          enddo
 c
 cc
 cc.... G and G^T
-cc          
+cc
 c          do iel = 1, numel
 c
 c             do i = 1, nshl
 c                i0 = (i-1)*3
-c                do j = 1, nshl 
-c                
+c                do j = 1, nshl
+c
 c                   ia = (ien(iel,i)-1)*4 + 1
-c                   ib = (ien(iel,j)-1)*4 + 1 
-cc                      
+c                   ib = (ien(iel,j)-1)*4 + 1
+cc
 c                global(ia+1,ib  ) = global(ia+1,ib  )+ xGoC(iel,i0+1,j)
 c                global(ia+2,ib  ) = global(ia+2,ib  )+ xGoC(iel,i0+2,j)
 c                global(ia+3,ib  ) = global(ia+3,ib  )+ xGoC(iel,i0+3,j)
@@ -296,7 +299,7 @@ c             enddo
 cc
 c          enddo
 c       enddo
-c       
+c
 cc
 cc.... C
 cc
@@ -306,17 +309,17 @@ c                i0 = 3*nshl + i
 c                do j = 1, nshl
 c                   ia = (ien(iel,i)-1)*4 + 1
 c                   ib = (ien(iel,j)-1)*4 + 1
-cc                      
+cc
 c                   global(ia,ib) = global(ia,ib) + xGoC(iel,i0,j)
 cc
 c                enddo
 c             enddo
-c             
+c
 cc
 c          enddo
-c       
-c          
-c       
+c
+c
+c
 ccad	  ttim(4) = ttim(4) + secs(0.0)
 c
 cc
@@ -385,7 +388,7 @@ c
 c.... end
 c
         end
- 
+
       subroutine localb (global, rlocal, ientmp, n, code)
 c
 c----------------------------------------------------------------------
@@ -399,7 +402,7 @@ c  ien    (npro,nshl)      : nodal connectivity
 c  n                            : number of d.o.f.'s to be copied
 c  code                         : the transfer code
 c                                  .eq. 'gather  ', from global to local
-c                                  .eq. 'scatter ', add  local to global 
+c                                  .eq. 'scatter ', add  local to global
 c                                  .eq. 'globaliz', from local to global
 c
 c
@@ -412,7 +415,7 @@ c
      &            ien(npro,nshl),           ientmp(npro,nshl)
 c
         character*8 code
-        
+
 c
 c.... cubic basis has negatives in ien
 c
@@ -464,7 +467,7 @@ c
           do j = 1, n
             do i = 1, nshlb
               do nel = 1,npro
-                global(ien(nel,i),j) = global(ien(nel,i),j) 
+                global(ien(nel,i),j) = global(ien(nel,i),j)
      &                               + rlocal(nel,i,j)
               enddo
             enddo
@@ -510,7 +513,3 @@ c.... end
 c
         end
 c
-
-
-
-

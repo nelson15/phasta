@@ -1,5 +1,5 @@
         subroutine AsIGMR (y,       ac,      x,       xmudmi,
-     &                     shp,     shgl,    C,   ien,
+     &                     shp,     shgl,       ien,
      &                     res,     qres,
      &                     xKebe,   xGoC,    rerr, CFLworst)
 c
@@ -85,7 +85,7 @@ c
         if(ierrcalc.eq.1) rerrl = zero
 
         call e3  (yl,      acl,     dwl,     shp,
-     &            shgl,  C,   xl,      rl,      
+     &            shgl,  C1, C2, C3,   xl,      rl,
      &            ql,      xKebe,   xGoC,    xmudmi,
      &            sgn,     rerrl,  rlsl,     CFLworst)
 c

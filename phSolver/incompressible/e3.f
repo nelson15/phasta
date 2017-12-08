@@ -1,5 +1,5 @@
         subroutine e3 (yl,      acl,     dwl,     shp,
-     &                 shgl,   C,  xl,      rl,      ql,
+     &                 shgl,   C1, C2, C3,  xl,      rl,      ql,
      &                 xKebe,   xGoC,    xmudmi,  sgn,
      &                 rerrl, rlsl)
 c
