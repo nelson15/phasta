@@ -40,7 +40,8 @@ c
         dimension yl(npro,nshl,ndof),
      &            acl(npro,nshl,ndof),
      &            shp(nshl1D,ngauss1D),       shgl(1,nshl1D,ngauss1D),
-     &            C(num_elem_1D, ipord+1,ipord+1),
+     &            C1(npro, ipord+1,ipord+1),C2(npro, ipord+1,ipord+1),
+     &            C3(npro, ipord+1,ipord+1),
      &            xl(npro,nenl,nsd),      dwl(npro,nenl),
      &            rl(npro,nshl,nflow),     ql(npro,nshl,idflx)
 c
@@ -65,21 +66,21 @@ c
         dimension rlsl(npro,nshl,6),      rlsli(npro,6)
 
         real*8    rerrl(npro,nshl,6)
-        real*8    shpIGA(nshl,ngauss),   shglIGA(nsd,nshl,ngauss)
+c        real*8    shpIGA(nshl,ngauss),   shglIGA(nsd,nshl,ngauss)
 
 c
 c
 c    Include by Arvind Dudi Raghunath for the case of IGA hexes
-        call getshpIGA(shp, shgl, C,shpIGA,shglIGA,xl)
+c        call getshpIGA(shp, shgl, C,shpIGA,shglIGA,xl)
 c
 c
 c.... local reconstruction of diffusive flux vector for quadratics
 c     or greater but NOT for bflux since local mass was not mapped
 c
         if ( idiff==2 .and. ires .eq. 1 ) then
-           call e3ql (yl,        dwl,       shp,       shgl, C,
+           call e3ql (yl,        dwl,       shp,       shgl, C1, C2, C3
      &                xl,        ql,        xmudmi,
-     &                sgn,   shpIGA,       shglIGA)
+     &                sgn)
         endif
 c
 c.... loop through the integration points
@@ -89,8 +90,8 @@ c
         if (Qwt(lcsyst,intp) .eq. zero) cycle          ! precaution
 c.... get the hierarchic shape functions at this int point
 c
-        call getshp(shpIGA,       shglIGA,      C,   sgn,
-     &              shpfun,       shdrv)
+        call getshp(shp,       shgl,   sgn,
+     &              shpfun,       shdrv, C1, C2, C3)
 c
 c.... get necessary fluid properties (including eddy viscosity)
 c

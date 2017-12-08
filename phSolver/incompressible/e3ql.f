@@ -24,7 +24,8 @@ c
 c
       dimension yl(npro,nshl,ndof),        dwl(npro,nshl),
      &          shp(nshl,ngauss),          shgl(nsd,nshl,ngauss),
-     &          C(num_elem_1D, ipord+1,ipord+1),
+     &          C1(npro, ipord+1,ipord+1),C2(npro, ipord+1,ipord+1),
+     &            C3(npro, ipord+1,ipord+1),
      &          xl(npro,nenl,nsd),
      &          ql(npro,nshl,idflx), xmudmi(npro,ngauss)
      &          sgn(npro,nshl),
@@ -54,8 +55,8 @@ c
 
       do intp = 1, ngauss
 
-         call getshp(shpIGA, shglIGA, C, sgn, shape, shdrv)
-
+        call getshp(shp,       shgl,   sgn,
+     &              shpfun,       shdrv, C1, C2, C3)
          qdi = zero
 c
 c.... calculate the integration variables

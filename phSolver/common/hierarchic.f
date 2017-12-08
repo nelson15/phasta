@@ -27,18 +27,31 @@ c------------------------------------------------------------------------
       return
       end
 
-      subroutine getshp(shp, shgl, sgn, shape, shdrv)
+      subroutine getshp(shp, shgl, sgn, shape, shdrv,C1,C2,C3)
 c------------------------------------------------------------------------
 c     returns the matrix of element shape functions with the higher
 c     order modes correctly negated at the current quadrature point.
 c------------------------------------------------------------------------
       include "common.h"
 
-      dimension shp(nshl,ngauss),   shgl(nsd,nshl,ngauss),
+      dimension shp(nshl,ngauss),   shgl(1,nshl,ngauss),
      &          sgn(npro,nshl),     shape(npro,nshl),
-     &          shdrv(npro,nsd,nshl)
-     &          ID(npro,nsd)
-
+     &          shdrv(npro,nsd,nshl),
+     &          C1(npro,ipro+1,ipro+1), C2(npro,ipor+1,ipro+1),
+     &          C3(npro,ipro+1,ipro+1)
+c
+       real*8 Cx(npro,ipro+1,ngauss), Cy(npro,ipor+1,ngauss),
+     &        Cz(npro,ipro+1,ngauss)
+      real*8 Cgx(npro,ipro+1,ngauss), Cgy(npro,ipor+1,ngauss),
+     &        Cgz(npro,ipro+1,ngauss)
+      real*8  shglIGA(nshl,ngauss)
+      shglIGA(1:nshl,1:ngauss)= shgl(1,1:nshl,1:ngauss)
+      Cx=matmul(C1,shp)
+      Cy=matmul(C2,shp)
+      Cz=matmul(C3,shp)
+      Cgx=matmul(C1,shglIGA)
+      Cgy=matmul(C2,shglIGA)
+      Cgz=matmul(C3,shglIGA)
 c we have access to INTP which is the gauss point
 c we need to get the coords of that gauss point via
        k = intp / (ngauss1D*ngauss1D);
@@ -46,11 +59,10 @@ c we need to get the coords of that gauss point via
        i = intp - k*ngauss1D*ngauss1D - j*ngauss1D;
       do itr=1,ipord+1
 
-         shape(:,itr) = C(ID(:,1),:,:)*shp(itr,i)* C(ID(:,2),:,:)
-     &                    *shp(itr,j)* C(ID(:,3),:,:)*shp(itr,k)
-         do jtr=1,3
-            shdrv(:,jtr,itr) = shgl(j,i,intp)
-         enddo
+         shape(:,itr) = Cx(:,itr,i)*Cy(:,itr,j)*Cz(:,itr,k)
+         shdrv(1,:,itr) = Cgx(:,itr,i)*Cy(:,itr,j)*Cz(:,itr,k)
+         shdrv(2,:,itr) = Cx(:,itr,i)*Cgy(:,itr,j)*Cz(:,itr,k)
+         shdrv(3,:,itr) = Cx(:,itr,i)*Cy(:,itr,j)*Cgz(:,itr,k)
       enddo
 
       if ( ipord > 1 ) then
