@@ -94,9 +94,7 @@ c
      &                nint(MAXTOP),           nintb(MAXTOP),
 c                  ngauss,                 ngaussb,   intp,
      &                ngauss1D,   ngauss,        ngaussb,   intp,
-     &                   maxnint, C1(npro,ipord+1,ipord+1),
-	   &                    C2(npro,ipord+1,ipord+1),C3(npro,ipord+1,ipord+1)
-
+     &                   maxnint
 c nsrflist is a binary switch that tells us if a given srfID should be
 c included in the consistent flux calculation.  It starts from zero
 c since we need to be able to handle/ignore surfaces with no srfID attached
@@ -111,6 +109,8 @@ c
      &                  irankfilesforce(0:MAXSURF)
 c
         common /blkdat/ lcblk(10,MAXBLK+1),      lcblkb(10,MAXBLK+1)
+c
+			  common /extraction/ C1(MAXTOP,4,4),  C2(MAXTOP,4,4), C3(MAXTOP,4,4)
 c
         common /mbndnod/ mnodeb(9,8,3)
 c

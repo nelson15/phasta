@@ -44,26 +44,30 @@ c
      &        Cz(npro,ipord+1,ngauss)
       real*8 Cgx(npro,ipord+1,ngauss), Cgy(npro,ipord+1,ngauss),
      &        Cgz(npro,ipord+1,ngauss)
-      real*8  shglIGA(nshl,ngauss)
-      shglIGA(1:nshl,1:ngauss)= shgl(1,1:nshl,1:ngauss)
-      Cx=matmul(C1,shp)
-      Cy=matmul(C2,shp)
-      Cz=matmul(C3,shp)
-      Cgx=matmul(C1,shglIGA)
-      Cgy=matmul(C2,shglIGA)
-      Cgz=matmul(C3,shglIGA)
+c      real*8  shglIGA(nshl,ngauss)
+c      shglIGA(1:nshl,1:ngauss)= shgl(1,1:nshl,1:ngauss)
+
 c we have access to INTP which is the gauss point
 c we need to get the coords of that gauss point via
        k = intp / (ngauss1D*ngauss1D);
        j = (intp - k*ngauss1D*ngauss1D) / ngauss1D;
        i = intp - k*ngauss1D*ngauss1D - j*ngauss1D;
-      do itr=1,ipord+1
-
+       do ipar=1,ipord+1
+         do jpar=1,nshl
+           Cx(:,ipard,i)+=C1(:,ipar,japar)*shp(jpar,i)
+           Cy(:,ipard,j)+=C2(:,ipar,japar)*shp(jpar,j)
+           Cy(:,ipard,k)+=C3(:,ipar,japar)*shp(jpar,k)
+           Cgx(:,ipard,i)+=C1(:,ipar,japar)*shgl(1,jpar,i)
+           Cgy(:,ipard,j)+=C2(:,ipar,japar)*shgl(1,jpar,j)
+           Cgz(:,ipard,j)+=C3(:,ipar,japar)*shgl(1,jpar,k)
+         enddo
+       enddo
+       do itr=1,ipord+1
          shape(:,itr) = Cx(:,itr,i)*Cy(:,itr,j)*Cz(:,itr,k)
          shdrv(1,:,itr) = Cgx(:,itr,i)*Cy(:,itr,j)*Cz(:,itr,k)
          shdrv(2,:,itr) = Cx(:,itr,i)*Cgy(:,itr,j)*Cz(:,itr,k)
          shdrv(3,:,itr) = Cx(:,itr,i)*Cy(:,itr,j)*Cgz(:,itr,k)
-      enddo
+       enddo
 
       if ( ipord > 1 ) then
          do i=nenl+1,nshl
