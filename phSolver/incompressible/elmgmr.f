@@ -171,7 +171,8 @@ c
 
           tmpshp(1:nshl,:) = shp(lcsyst,1:nshl1D,:)
           tmpshgl(:,1:nshl,:) = shgl(lcsyst,:,1:nshl1D,:)
-
+          allocate (Cx(npro, ipord+1,ipord+1),Cy(npro, ipord+1,ipord+1),
+          &            Cz(npro, ipord+1,ipord+1),)
           call AsIGMR (y,                   ac,
      &                 x,                   mxmudmi(iblk)%p,
      &                 tmpshp,
