@@ -662,6 +662,8 @@ extern "C" {
     int iamg_reduce;        /* Run a reduced case */
  } amgvari ;
 
+int bern(int i, int p, double x);
+
 #ifdef __cplusplus
 }
 #endif
