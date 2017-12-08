@@ -15,8 +15,7 @@ c
         include "mpif.h" !Required to determine the max for itpblk
 c Change made by Arvind Dudi Raghunath for inclusion of extraction oprerator in
 c each direction
-        integer, target, allocatable :: ientp(:,:), C1(:,:,:),C2(:,:,:),
-     &                                  C3(:,:,:)
+        integer, target, allocatable :: ientp(:,:)
         integer mater(ibksz)
         integer, target :: intfromfile(50) ! integers read from headers
         character*255 fname1
@@ -76,10 +75,6 @@ c
               allocate (mmat(nelblk)%p(npro))
 c
                 allocate (mien(nelblk)%p(npro,nshl))
-                allocate (mC1(nelblk)%p(npro,ipord+1,ipord+1))
-                allocate (mC2(nelblk)%p(npro,ipord+1,ipord+1))
-                allocate (mC3(nelblk)%p(npro,ipord+1,ipord+1))
-                allocate (mxmudmi(nelblk)%p(npro,maxsh))
                 if(usingpetsc.eq.0) then
                     allocate (mienG(nelblk)%p(1,1))
                 else

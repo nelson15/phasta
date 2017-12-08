@@ -94,7 +94,8 @@ c
      &                nint(MAXTOP),           nintb(MAXTOP),
 c                  ngauss,                 ngaussb,   intp,
      &                ngauss1D,   ngauss,        ngaussb,   intp,
-     &                   maxnint
+     &                   maxnint, C1(npro,ipord+1,ipord+1),
+	   &                    C2(npro,ipord+1,ipord+1),C3(npro,ipord+1,ipord+1)
 
 c nsrflist is a binary switch that tells us if a given srfID should be
 c included in the consistent flux calculation.  It starts from zero
