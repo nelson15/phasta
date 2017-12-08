@@ -15,7 +15,7 @@ c.... parameters  IF YOU CHANGE THES YOU HAVE TO CHANGE THEM IN
 c                  common_c.h ALSO
 c
         parameter     ( MAXBLK = 50000, MAXTS = 100)
-        parameter     ( MAXSH = 32, NSD = 3 , NSDSQ = 9, num_elem_1D = 16,)
+        parameter     ( MAXSH = 32, NSD = 3 , NSDSQ = 9, num_elem_1D = 16)
 c
 c  The five types of region topology are  1= Tet, 2=Hex, 3= Wedge (tri-start),
 c                                         4= Wedge (quad-first) 5=pyramid
