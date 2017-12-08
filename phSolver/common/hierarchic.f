@@ -37,8 +37,8 @@ c------------------------------------------------------------------------
       dimension shp(nshl,ngauss),   shgl(1,nshl,ngauss),
      &          sgn(npro,nshl),     shape(npro,nshl),
      &          shdrv(npro,nsd,nshl),
-     &          Cx(npro,ipord+1,ipord+1), Cy(npro,ipord+1,ipord+1),
-     &          Cz(npro,ipord+1,ipord+1)
+c     &          Cx(npro,ipord+1,ipord+1), Cy(npro,ipord+1,ipord+1),
+c     &          Cz(npro,ipord+1,ipord+1)
 c
       double precision tCx(npro,ipord+1,ngauss), tCy(npro,ipord+1,ngauss),
      &                 tCz(npro,ipord+1,ngauss)
