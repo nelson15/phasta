@@ -52,14 +52,15 @@ c we need to get the coords of that gauss point via
        k = intp / (ngauss1D*ngauss1D);
        j = (intp - k*ngauss1D*ngauss1D) / ngauss1D;
        i = intp - k*ngauss1D*ngauss1D - j*ngauss1D;
-       do ipar=1,ipord+1
-         do jpar=1,nshl
-           Cx(:,ipar,i)+=C1(:,ipar,japar)*shp(jpar,i)
-           Cy(:,ipar,j)+=C2(:,ipar,japar)*shp(jpar,j)
-           Cy(:,ipar,k)+=C3(:,ipar,japar)*shp(jpar,k)
-           Cgx(:,ipar,i)+=C1(:,ipar,japar)*shgl(1,jpar,i)
-           Cgy(:,ipar,j)+=C2(:,ipar,japar)*shgl(1,jpar,j)
-           Cgz(:,ipar,j)+=C3(:,ipar,japar)*shgl(1,jpar,k)
+       do ipro=1, npro
+         do ipar=1,ipord+1
+           do jpar=1,nshl
+            Cx(ipro,ipar,i)+=C1(ipro,ipar,jpar)*shp(jpar,i)
+            Cy(ipro,ipar,j)+=C2(ipro,ipar,jpar)*shp(jpar,j)
+            Cy(ipro,ipar,k)+=C3(ipro,ipar,jpar)*shp(jpar,k)
+            Cgx(ipro,ipar,i)+=C1(ipro,ipar,jpar)*shgl(1,jpar,i)
+            Cgy(ipro,ipar,j)+=C2(ipro,ipar,jpar)*shgl(1,jpar,j)
+            Cgz(ipro,ipar,k)+=C3(ipro,ipar,jpar)*shgl(1,jpar,k)
          enddo
        enddo
        do itr=1,ipord+1
