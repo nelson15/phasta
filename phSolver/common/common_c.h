@@ -63,6 +63,7 @@
 #define MAXSH    32
 #define NSD      3
 #define num_elem_1D 16
+#define ipord 3 /* addedby Arvind Dudi Raghunath for pig-A*/
 #define NSDSQ    9
 #define machin   'RS/6000'
 #define machfl   4

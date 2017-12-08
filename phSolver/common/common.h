@@ -15,7 +15,8 @@ c.... parameters  IF YOU CHANGE THES YOU HAVE TO CHANGE THEM IN
 c                  common_c.h ALSO
 c
         parameter     ( MAXBLK = 50000, MAXTS = 100)
-        parameter     ( MAXSH = 32, NSD = 3 , NSDSQ = 9, num_elem_1D = 16)
+        parameter     ( MAXSH = 32, NSD = 3 , NSDSQ = 9, num_elem_1D = 16,
+     &                  ipord =3)
 c
 c  The five types of region topology are  1= Tet, 2=Hex, 3= Wedge (tri-start),
 c                                         4= Wedge (quad-first) 5=pyramid
@@ -94,9 +95,7 @@ c
      &                nint(MAXTOP),           nintb(MAXTOP),
 c                  ngauss,                 ngaussb,   intp,
      &                ngauss1D,   ngauss,        ngaussb,   intp,
-     &                   maxnint, C1(npro,ipord+1,ipord+1),
-	   &                    C2(npro,ipord+1,ipord+1),C3(npro,ipord+1,ipord+1)
-
+     &                   maxnint
 c nsrflist is a binary switch that tells us if a given srfID should be
 c included in the consistent flux calculation.  It starts from zero
 c since we need to be able to handle/ignore surfaces with no srfID attached
