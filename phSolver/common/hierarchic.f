@@ -37,13 +37,13 @@ c------------------------------------------------------------------------
       dimension shp(nshl,ngauss),   shgl(1,nshl,ngauss),
      &          sgn(npro,nshl),     shape(npro,nshl),
      &          shdrv(npro,nsd,nshl),
-     &          C1(npro,ipro+1,ipro+1), C2(npro,ipor+1,ipro+1),
-     &          C3(npro,ipro+1,ipro+1)
+     &          C1(npro,ipord+1,ipord+1), C2(npro,ipord+1,ipord+1),
+     &          C3(npro,ipord+1,ipord+1)
 c
-       real*8 Cx(npro,ipro+1,ngauss), Cy(npro,ipor+1,ngauss),
-     &        Cz(npro,ipro+1,ngauss)
-      real*8 Cgx(npro,ipro+1,ngauss), Cgy(npro,ipor+1,ngauss),
-     &        Cgz(npro,ipro+1,ngauss)
+       real*8 Cx(npro,ipord+1,ngauss), Cy(npro,ipord+1,ngauss),
+     &        Cz(npro,ipord+1,ngauss)
+      real*8 Cgx(npro,ipord+1,ngauss), Cgy(npro,ipord+1,ngauss),
+     &        Cgz(npro,ipord+1,ngauss)
       real*8  shglIGA(nshl,ngauss)
       shglIGA(1:nshl,1:ngauss)= shgl(1,1:nshl,1:ngauss)
       Cx=matmul(C1,shp)
