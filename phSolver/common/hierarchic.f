@@ -40,9 +40,9 @@ c------------------------------------------------------------------------
      &          C1(npro,ipord+1,ipord+1), C2(npro,ipord+1,ipord+1),
      &          C3(npro,ipord+1,ipord+1)
 c
-       real*8 Cx(npro,ipord+1,ngauss), Cy(npro,ipord+1,ngauss),
+      double precision Cx(npro,ipord+1,ngauss), Cy(npro,ipord+1,ngauss),
      &        Cz(npro,ipord+1,ngauss)
-       real*8 Cgx(npro,ipord+1,ngauss), Cgy(npro,ipord+1,ngauss),
+       double precision Cgx(npro,ipord+1,ngauss), Cgy(npro,ipord+1,ngauss),
      &        Cgz(npro,ipord+1,ngauss)
 c      real*8  shglIGA(nshl,ngauss)
 c      shglIGA(1:nshl,1:ngauss)= shgl(1,1:nshl,1:ngauss)
