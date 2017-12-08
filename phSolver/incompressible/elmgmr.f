@@ -175,7 +175,7 @@ c
           call AsIGMR (y,                   ac,
      &                 x,                   mxmudmi(iblk)%p,
      &                 tmpshp,
-     &                 tmpshgl,C1,C2,C3,
+     &                 tmpshgl,Cx,Cy,Cz,
      &                 mien(iblk)%p,
      &                 res,
      &                 qres,                xKebe,

@@ -37,13 +37,13 @@ c------------------------------------------------------------------------
       dimension shp(nshl,ngauss),   shgl(1,nshl,ngauss),
      &          sgn(npro,nshl),     shape(npro,nshl),
      &          shdrv(npro,nsd,nshl),
-     &          C1(npro,ipord+1,ipord+1), C2(npro,ipord+1,ipord+1),
-     &          C3(npro,ipord+1,ipord+1)
+     &          Cx(npro,ipord+1,ipord+1), Cy(npro,ipord+1,ipord+1),
+     &          Cz(npro,ipord+1,ipord+1)
 c
-      double precision Cx(npro,ipord+1,ngauss), Cy(npro,ipord+1,ngauss),
-     &        Cz(npro,ipord+1,ngauss)
-       double precision Cgx(npro,ipord+1,ngauss), Cgy(npro,ipord+1,ngauss),
-     &        Cgz(npro,ipord+1,ngauss)
+      double precision tCx(npro,ipord+1,ngauss), tCy(npro,ipord+1,ngauss),
+     &                 tCz(npro,ipord+1,ngauss)
+      double precision tCgx(npro,ipord+1,ngauss), tCgy(npro,ipord+1,ngauss),
+     &                  tCgz(npro,ipord+1,ngauss)
 c      real*8  shglIGA(nshl,ngauss)
 c      shglIGA(1:nshl,1:ngauss)= shgl(1,1:nshl,1:ngauss)
 
@@ -55,30 +55,30 @@ c we need to get the coords of that gauss point via
        do ipro=1, npro
          do ipar=1,ipord+1
            do jpar=1,nshl
-            Cx(ipro,ipar,i)+=C1(ipro,ipar,jpar)*shp(jpar,i)
-            Cy(ipro,ipar,j)+=C2(ipro,ipar,jpar)*shp(jpar,j)
-            Cy(ipro,ipar,k)+=C3(ipro,ipar,jpar)*shp(jpar,k)
-            Cgx(ipro,ipar,i)+=C1(ipro,ipar,jpar)*shgl(1,jpar,i)
-            Cgy(ipro,ipar,j)+=C2(ipro,ipar,jpar)*shgl(1,jpar,j)
-            Cgz(ipro,ipar,k)+=C3(ipro,ipar,jpar)*shgl(1,jpar,k)
+            tCx(ipro,ipar,i)+=Cx(ipro,ipar,jpar)*shp(jpar,i)
+            tCy(ipro,ipar,j)+=Cy(ipro,ipar,jpar)*shp(jpar,j)
+            tCz(ipro,ipar,k)+=Cz(ipro,ipar,jpar)*shp(jpar,k)
+            tCgx(ipro,ipar,i)+=Cx(ipro,ipar,jpar)*shgl(1,jpar,i)
+            tCgy(ipro,ipar,j)+=Cy(ipro,ipar,jpar)*shgl(1,jpar,j)
+            tCgz(ipro,ipar,k)+=Cz(ipro,ipar,jpar)*shgl(1,jpar,k)
             enddo
          enddo
        enddo
        do itr=1,ipord+1
-         shape(:,itr) = Cx(:,itr,i)*Cy(:,itr,j)*Cz(:,itr,k)
-         shdrv(1,:,itr) = Cgx(:,itr,i)*Cy(:,itr,j)*Cz(:,itr,k)
-         shdrv(2,:,itr) = Cx(:,itr,i)*Cgy(:,itr,j)*Cz(:,itr,k)
-         shdrv(3,:,itr) = Cx(:,itr,i)*Cy(:,itr,j)*Cgz(:,itr,k)
+         shape(:,itr) = tCx(:,itr,i)*tCy(:,itr,j)*tCz(:,itr,k)
+         shdrv(1,:,itr) = tCgx(:,itr,i)*tCy(:,itr,j)*tCz(:,itr,k)
+         shdrv(2,:,itr) = tCx(:,itr,i)*tCgy(:,itr,j)*tCz(:,itr,k)
+         shdrv(3,:,itr) = tCx(:,itr,i)*tCy(:,itr,j)*tCgz(:,itr,k)
        enddo
 
-      if ( ipord > 1 ) then
-         do i=nenl+1,nshl
-            shape(:,i) = sgn(:,i) * shp(i,intp)
-            do j=1,3
-               shdrv(:,j,i) = shgl(j,i,intp)*sgn(:,i)
-            enddo
-         enddo
-      endif
+c      if ( ipord > 1 ) then
+c         do i=nenl+1,nshl
+c            shape(:,i) = sgn(:,i) * shp(i,intp)
+c            do j=1,3
+c               shdrv(:,j,i) = shgl(j,i,intp)*sgn(:,i)
+c            enddo
+c         enddo
+c     endif
 
       return
       end

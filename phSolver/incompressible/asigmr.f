@@ -1,5 +1,5 @@
         subroutine AsIGMR (y,       ac,      x,       xmudmi,
-     &                     shp,     shgl,C1,C2,C3,       ien,
+     &                     shp,     shgl,Cx,Cy,Cz,       ien,
      &                     res,     qres,
      &                     xKebe,   xGoC,    rerr, CFLworst)
 c
@@ -22,8 +22,8 @@ c
         dimension y(nshg,ndofl),              ac(nshg,ndofl),
      &            x(numnp,nsd),
      &            shp(nshl,ngauss),            shgl(nsd,nshl,ngauss),
-     &            C1(npro, ipord+1,ipord+1),C2(npro, ipord+1,ipord+1),
-     &            C3(npro, ipord+1,ipord+1),
+     &            Cx(npro, ipord+1,ipord+1),Cy(npro, ipord+1,ipord+1),
+     &            Cz(npro, ipord+1,ipord+1),
      &            ien(npro,nshl),
      &            res(nshg,nflow),
      &            qres(nshg,idflx)
@@ -86,7 +86,7 @@ c
         if(ierrcalc.eq.1) rerrl = zero
 
         call e3  (yl,      acl,     dwl,     shp,
-     &            shgl,  C1, C2, C3,   xl,      rl,
+     &            shgl,  Cx, Cy, Cz,   xl,      rl,
      &            ql,      xKebe,   xGoC,    xmudmi,
      &            sgn,     rerrl,  rlsl,     CFLworst)
 c

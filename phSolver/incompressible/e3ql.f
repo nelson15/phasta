@@ -1,5 +1,5 @@
       subroutine e3ql (yl,      dwl,     shp,     shgl,
-     &                 C, xl,      ql,      xmudmi,
+     &                 Cx,Cy,Cz, xl,      ql,      xmudmi,
      &                 sgn,    shpIGA,       shglIGA )
 c
 c----------------------------------------------------------------------
@@ -24,8 +24,8 @@ c
 c
       dimension yl(npro,nshl,ndof),        dwl(npro,nshl),
      &          shp(nshl,ngauss),          shgl(nsd,nshl,ngauss),
-     &          C1(npro, ipord+1,ipord+1),C2(npro, ipord+1,ipord+1),
-     &          C3(npro, ipord+1,ipord+1),
+     &          Cx(npro, ipord+1,ipord+1),Cy(npro, ipord+1,ipord+1),
+     &          Cz(npro, ipord+1,ipord+1),
      &          xl(npro,nenl,nsd),
      &          ql(npro,nshl,idflx), xmudmi(npro,ngauss)
      &          sgn(npro,nshl),
@@ -56,7 +56,7 @@ c
       do intp = 1, ngauss
 
         call getshp(shp,       shgl,   sgn,
-     &              shpfun,       shdrv, C1, C2, C3)
+     &              shpfun,       shdrv, Cx, Cy, Cz)
          qdi = zero
 c
 c.... calculate the integration variables

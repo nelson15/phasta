@@ -40,8 +40,8 @@ c
         dimension yl(npro,nshl,ndof),
      &            acl(npro,nshl,ndof),
      &            shp(nshl1D,ngauss1D),       shgl(1,nshl1D,ngauss1D),
-     &            C1(npro, ipord+1,ipord+1),C2(npro, ipord+1,ipord+1),
-     &            C3(npro, ipord+1,ipord+1),
+     &            Cx(npro, ipord+1,ipord+1),Cy(npro, ipord+1,ipord+1),
+     &            Cz(npro, ipord+1,ipord+1),
      &            xl(npro,nenl,nsd),      dwl(npro,nenl),
      &            rl(npro,nshl,nflow),     ql(npro,nshl,idflx)
 c
@@ -78,7 +78,7 @@ c.... local reconstruction of diffusive flux vector for quadratics
 c     or greater but NOT for bflux since local mass was not mapped
 c
         if ( idiff==2 .and. ires .eq. 1 ) then
-           call e3ql (yl,        dwl,       shp,       shgl, C1, C2, C3
+           call e3ql (yl,        dwl,       shp,       shgl, Cx, Cy, Cz
      &                xl,        ql,        xmudmi,
      &                sgn)
         endif
@@ -91,7 +91,7 @@ c
 c.... get the hierarchic shape functions at this int point
 c
         call getshp(shp,       shgl,   sgn,
-     &              shpfun,       shdrv, C1, C2, C3)
+     &              shpfun,       shdrv, Cx, Cy, Cz)
 c
 c.... get necessary fluid properties (including eddy viscosity)
 c

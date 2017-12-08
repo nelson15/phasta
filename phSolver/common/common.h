@@ -110,7 +110,7 @@ c
 c
         common /blkdat/ lcblk(10,MAXBLK+1),      lcblkb(10,MAXBLK+1)
 c
-			  double precision C1(MAXTOP,4,4),  C2(MAXTOP,4,4), C3(MAXTOP,4,4)
+			  double precision Cx(MAXTOP,4,4),  Cy(MAXTOP,4,4), Cz(MAXTOP,4,4)
 c
         common /mbndnod/ mnodeb(9,8,3)
 c
