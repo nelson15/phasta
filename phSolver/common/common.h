@@ -110,6 +110,8 @@ c
 c
         common /blkdat/ lcblk(10,MAXBLK+1),      lcblkb(10,MAXBLK+1)
 c
+			  common /blkdat/ C1(:,4,4),  C2(:,4,4), C3(:,4,4)
+c
         common /mbndnod/ mnodeb(9,8,3)
 c
 	integer, target :: numnp,  numel,  numelb, numpbc, nen,    nfaces,
