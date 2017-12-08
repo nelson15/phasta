@@ -49,3 +49,5 @@ extern "C" int quad_face(double xi[3], int gOrd[3], int p, double*
 			 entfn, double** edrv);
 extern "C" int hex_regn(double xi[3], int p, double*
 			entfn, double** edrv);
+
+extern "C" int bern(int i, int p, double x);
