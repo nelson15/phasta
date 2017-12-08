@@ -54,12 +54,12 @@ c we need to get the coords of that gauss point via
        i = intp - k*ngauss1D*ngauss1D - j*ngauss1D;
        do ipar=1,ipord+1
          do jpar=1,nshl
-           Cx(:,ipard,i)+=C1(:,ipar,japar)*shp(jpar,i)
-           Cy(:,ipard,j)+=C2(:,ipar,japar)*shp(jpar,j)
-           Cy(:,ipard,k)+=C3(:,ipar,japar)*shp(jpar,k)
-           Cgx(:,ipard,i)+=C1(:,ipar,japar)*shgl(1,jpar,i)
-           Cgy(:,ipard,j)+=C2(:,ipar,japar)*shgl(1,jpar,j)
-           Cgz(:,ipard,j)+=C3(:,ipar,japar)*shgl(1,jpar,k)
+           Cx(:,ipar,i)+=C1(:,ipar,japar)*shp(jpar,i)
+           Cy(:,ipar,j)+=C2(:,ipar,japar)*shp(jpar,j)
+           Cy(:,ipar,k)+=C3(:,ipar,japar)*shp(jpar,k)
+           Cgx(:,ipar,i)+=C1(:,ipar,japar)*shgl(1,jpar,i)
+           Cgy(:,ipar,j)+=C2(:,ipar,japar)*shgl(1,jpar,j)
+           Cgz(:,ipar,j)+=C3(:,ipar,japar)*shgl(1,jpar,k)
          enddo
        enddo
        do itr=1,ipord+1
