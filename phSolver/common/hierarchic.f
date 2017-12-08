@@ -61,6 +61,7 @@ c we need to get the coords of that gauss point via
             Cgx(ipro,ipar,i)+=C1(ipro,ipar,jpar)*shgl(1,jpar,i)
             Cgy(ipro,ipar,j)+=C2(ipro,ipar,jpar)*shgl(1,jpar,j)
             Cgz(ipro,ipar,k)+=C3(ipro,ipar,jpar)*shgl(1,jpar,k)
+            enddo
          enddo
        enddo
        do itr=1,ipord+1
