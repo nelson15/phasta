@@ -175,11 +175,11 @@ c
           call AsIGMR (y,                   ac,
      &                 x,                   mxmudmi(iblk)%p,
      &                 tmpshp,
-     &                 tmpshgl, C
+     &                 tmpshgl,C1,C2,C3,
      &                 mien(iblk)%p,
      &                 res,
      &                 qres,                xKebe,
-     &                 xGoC,                rerr)
+     &                 xGoC,                rerr           )
 c
 c.... satisfy the BC's on the implicit LHS
 c

@@ -14,7 +14,8 @@ c
         include "common.h"
         include "mpif.h" !Required to determine the max for itpblk
 
-        integer, target, allocatable :: ientp(:,:)
+        integer, target, allocatable :: ientp(:,:), C1(:,:,:),C2(:,:,:),
+     &                                  C3(,:,:,:)
         integer mater(ibksz)
         integer, target :: intfromfile(50) ! integers read from headers
         character*255 fname1
@@ -38,7 +39,7 @@ c
         ndofl = ndof
         nsymdl = nsymdf
         do iblk = 1, itpblk
-        write (fname2,"('connectivity interior?')") 
+        write (fname2,"('connectivity interior?')")
            call phio_readheader(fhandle, fname2 // char(0),
      &      c_loc(intfromfile), iseven, dataInt, iotype)
            neltp  =intfromfile(1)
@@ -53,8 +54,8 @@ c
            call phio_readdatablock(fhandle,fname2 // char(0),
      &      c_loc(ientp), iientpsiz, dataInt, iotype)
 
-           do n=1,neltp,ibksz 
-             
+           do n=1,neltp,ibksz
+
               nelblk=nelblk+1
               npro= min(IBKSZ, neltp - n + 1)
 c
@@ -66,7 +67,7 @@ c              lcblk(2,nelblk)  = iopen ! available for later use
               lcblk(6,nelblk)  = nfacel
               lcblk(7,nelblk)  = mattyp
               lcblk(8,nelblk)  = ndofl
-              lcblk(9,nelblk)  = nsymdl 
+              lcblk(9,nelblk)  = nsymdl
               lcblk(10,nelblk) = nshl ! # of shape functions per elt
 c
 c.... allocate memory for stack arrays
@@ -80,7 +81,7 @@ c
                 else
                     allocate (mienG(nelblk)%p(npro,nshl))
                 endif
-                ! note mienG will be passed to gensav but nothing filled if not 
+                ! note mienG will be passed to gensav but nothing filled if not
                 ! using PETSc so this is safe
 c
 c.... save the element block

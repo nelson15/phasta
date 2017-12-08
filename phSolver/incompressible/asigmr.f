@@ -1,5 +1,5 @@
         subroutine AsIGMR (y,       ac,      x,       xmudmi,
-     &                     shp,     shgl,       ien,
+     &                     shp,     shgl,C1,C2,C3,       ien,
      &                     res,     qres,
      &                     xKebe,   xGoC,    rerr, CFLworst)
 c
@@ -22,7 +22,8 @@ c
         dimension y(nshg,ndofl),              ac(nshg,ndofl),
      &            x(numnp,nsd),
      &            shp(nshl,ngauss),            shgl(nsd,nshl,ngauss),
-     &            C(num_elem_1D, ipord+1,ipord+1),
+     &            C1(npro, ipord+1,ipord+1),C2(npro, ipord+1,ipord+1),
+     &            C3(npro, ipord+1,ipord+1),
      &            ien(npro,nshl),
      &            res(nshg,nflow),
      &            qres(nshg,idflx)
@@ -40,7 +41,7 @@ c
 
 c
         real*8    lStsVec(npro,nshl,nResDims)
-
+c
         dimension xmudmi(npro,ngauss)
         dimension sgn(npro,nshl)
         dimension CFLworst(npro)

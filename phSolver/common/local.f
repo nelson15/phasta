@@ -111,7 +111,7 @@ c.... end
 c
         end
 c
-        subroutine localx (global, rlocal, ien, n, code,C1,C2,C3)
+        subroutine localx (global, rlocal, ien, n, code)
 c
 c----------------------------------------------------------------------
 c
@@ -137,10 +137,6 @@ c
      &            ien(npro,nshl)
 c
         character*8 code
-c
-        dimension C1(npro, ipord+1,ipord+1),C2(npro, ipord+1,ipord+1),
-     &            C3(npro, ipord+1,ipord+1),
-c
 c.... ------------------------>  'localization  '  <--------------------
 c
         if (code .eq. 'gather  ') then
