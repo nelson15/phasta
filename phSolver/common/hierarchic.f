@@ -55,22 +55,15 @@ c we need to get the coords of that gauss point via
        do ipro=1, npro
          do ipar=1,ipord+1
            do jpar=1,nshl
-            tCx(ipro,ipar,i)+=Cx(ipro,ipar,jpar)*shp(jpar,i)
-            tCy(ipro,ipar,j)+=Cy(ipro,ipar,jpar)*shp(jpar,j)
-            tCz(ipro,ipar,k)+=Cz(ipro,ipar,jpar)*shp(jpar,k)
-            tCgx(ipro,ipar,i)+=Cx(ipro,ipar,jpar)*shgl(1,jpar,i)
-            tCgy(ipro,ipar,j)+=Cy(ipro,ipar,jpar)*shgl(1,jpar,j)
-            tCgz(ipro,ipar,k)+=Cz(ipro,ipar,jpar)*shgl(1,jpar,k)
-            enddo
-         enddo
-       enddo
-       do itr=1,ipord+1
-         shape(:,itr) = tCx(:,itr,i)*tCy(:,itr,j)*tCz(:,itr,k)
-         shdrv(1,:,itr) = tCgx(:,itr,i)*tCy(:,itr,j)*tCz(:,itr,k)
-         shdrv(2,:,itr) = tCx(:,itr,i)*tCgy(:,itr,j)*tCz(:,itr,k)
-         shdrv(3,:,itr) = tCx(:,itr,i)*tCy(:,itr,j)*tCgz(:,itr,k)
-       enddo
-
+            tCx(ipro,ipar,i)=tCx(ipro,ipar,i)+Cx(ipro,ipar,jpar)*shp(jpar,i)
+            tCy(ipro,ipar,j)=tCy(ipro,ipar,j)+Cy(ipro,ipar,jpar)*shp(jpar,j)
+            tCz(ipro,ipar,k)=tCz(ipro,ipar,k)+Cz(ipro,ipar,jpar)*shp(jpar,k)
+            tCgx(ipro,ipar,i)=tCgx(ipro,ipar,i)+Cx(ipro,ipar,jpar)*
+     &                        shgl(1,jpar,i)
+            tCgy(ipro,ipar,j)=tCgx(ipro,ipar,j)+Cx(ipro,ipar,jpar)*
+     &                        shgl(1,jpar,j)
+            tCgy(ipro,ipar,j)=tCgx(ipro,ipar,j)+Cx(ipro,ipar,jpar)*
+     &                        shgl(1,jpar,j)
 c      if ( ipord > 1 ) then
 c         do i=nenl+1,nshl
 c            shape(:,i) = sgn(:,i) * shp(i,intp)
