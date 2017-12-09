@@ -97,7 +97,7 @@ c              nshl   = lcblk(10,iblk)
 c              ngauss = nint(lcsyst)
 c CHECK ITH COREY FOR THIS IMPLEMENTATION
              ngauss1D=  nint(lcsyst)
-             ngauss  = ngauss1D^3
+             ngauss  = ngauss1D*ngauss1D*ngauss1D
 c
 c.... compute and assemble diffusive flux vector residual, qres,
 c     and lumped mass matrix, rmass
@@ -172,11 +172,11 @@ c
           tmpshgl(:,1:nshl,:) = shgl(lcsyst,:,1:nshl1D,:)
 c  Arvind Commment here
           allocate (Cx(npro, ipord+1,ipord+1),Cy(npro, ipord+1,ipord+1),
-          &            Cz(npro, ipord+1,ipord+1),)
+          &            Cz(npro, ipord+1,ipord+1))
           call AsIGMR (y,                   ac,
      &                 x,                   mxmudmi(iblk)%p,
      &                 tmpshp,
-     &                 tmpshgl,Cx,Cy,Cz,
+     &                 tmpshgl,
      &                 mien(iblk)%p,
      &                 res,
      &                 qres,                xKebe,
