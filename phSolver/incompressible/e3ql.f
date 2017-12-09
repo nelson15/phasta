@@ -25,7 +25,7 @@ c
       dimension yl(npro,nshl,ndof),        dwl(npro,nshl),
      &          shp(nshl,ngauss),          shgl(nsd,nshl,ngauss),
      &          xl(npro,nenl,nsd),
-     &          ql(npro,nshl,idflx), xmudmi(npro,ngauss)
+     &          ql(npro,nshl,idflx), xmudmi(npro,ngauss),
      &          sgn(npro,nshl),
      &          shpIGA(nshl,ngauss),   shglIGA(nsd,nshl,ngauss)
 c
