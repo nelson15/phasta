@@ -40,10 +40,16 @@ c------------------------------------------------------------------------
 c     &          Cx(npro,ipord+1,ipord+1), Cy(npro,ipord+1,ipord+1),
 c     &          Cz(npro,ipord+1,ipord+1)
 c
-      double precision tCx(npro,ipord+1,ngauss)=0.d0,tCy(npro,ipord+1,ngauss)=
-     &                 0.d0,tCz(npro,ipord+1,ngauss)=0.d0
-      double precision tCgx(npro,ipord+1,ngauss)=0.d0,tCgy(npro,ipord+1,ngauss)=
-     &                 0.d0,tCgz(npro,ipord+1,ngauss)=0.d0
+      double precision tCx(npro,ipord+1,ngauss),tCy(npro,ipord+1,ngauss)
+     &                 ,tCz(npro,ipord+1,ngauss)
+      double precision tCgx(npro,ipord+1,ngauss),tCgy(npro,ipord+1,ngauss)
+     &                 ,tCgz(npro,ipord+1,ngauss)
+      tCx(:,:,:)=0.0d0
+      tCy(:,:,:)=0.0d0
+      tCz(:,:,:)=0.0d0
+      tCgx(:,:,:)=0.0d0
+      tCgy(:,:,:)=0.0d0
+      tCgz(:,:,:)=0.0d0
 c      real*8  shglIGA(nshl,ngauss)
 c      shglIGA(1:nshl,1:ngauss)= shgl(1,1:nshl,1:ngauss)
 
