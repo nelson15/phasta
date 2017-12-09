@@ -12,7 +12,6 @@ c
 c
         dimension shp(MAXTOP,maxsh,MAXQPT),
      &            shgl(MAXTOP,1,maxsh,MAXQPT),
-     &            C(num_elem_1D, ipord+1,ipord+1)
 c
 c.... loop through element blocks
 c
@@ -64,7 +63,7 @@ c
                maxnint=max(maxnint,nint(lcsyst))
             do i=1,nint(lcsyst)
                call shphexIGA  (ipord, i,shp(6,:,i),
-     &                       shgl(6,:,:,i), C)
+     &                       shgl(6,:,:,i))
             enddo
 c
 c.... nonexistent element
