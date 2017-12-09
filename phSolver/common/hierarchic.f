@@ -27,7 +27,7 @@ c------------------------------------------------------------------------
       return
       end
 
-      subroutine getshp(shp, shgl, sgn, shape, shdrv,C1,C2,C3)
+      subroutine getshp(shp, shgl, sgn, shape, shdrv)
 c------------------------------------------------------------------------
 c     returns the matrix of element shape functions with the higher
 c     order modes correctly negated at the current quadrature point.

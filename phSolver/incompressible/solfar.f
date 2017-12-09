@@ -2,7 +2,7 @@
      &                   yold,       acold,      uold,
      &                   x,          iBC,
      &                   BC,         res,        iper,
-     &                   ilwork,     shp,        shgl, C,
+     &                   ilwork,     shp,        shgl,
      &                   shpb,       shglb,      rowp,
      &                   colm,
      &                   solinc,     rerr,       tcorecp,
@@ -91,8 +91,7 @@ c
       real*8    shp(MAXTOP,maxsh,MAXQPT),
      &          shgl(MAXTOP,1,maxsh,MAXQPT),
      &          shpb(MAXTOP,maxsh,MAXQPT),
-     &          shglb(MAXTOP,nsd,maxsh,MAXQPT),
-     &          C(num_elem_1D, ipord+1,ipord+1)
+     &          shglb(MAXTOP,nsd,maxsh,MAXQPT)
 c
       integer   usr(100),                 eqnType,temp,
      &          rowp(nshg*nnz),           colm(nshg+1),
@@ -145,7 +144,7 @@ c      call summary_start()
       telmcp1 = TMRC()
       call ElmGMR (uAlpha,    yAlpha,     acAlpha,    x,
      &             shp,       shgl,       iBC,
-     &             BC,        shpb,       shglb, C,
+     &             BC,        shpb,       shglb,
      &             res,       iper,       ilwork,
      &             rowp,      colm,       lhsK,
      &             lhsP,      rerr,       GradV   )

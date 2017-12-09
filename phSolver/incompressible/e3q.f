@@ -46,9 +46,9 @@ c
         dimension g1yti(npro),          g2yti(npro),
      &            g3yti(npro)
         integer idflow
-        real*8    shpIGA(nshl,ngauss),   shglIGA(nsd,nshl,ngauss)
+c        real*8    shpIGA(nshl,ngauss),   shglIGA(nsd,nshl,ngauss)
 c    Include by Arvind Dudi Raghunath for the case of IGA hexes
-        call getshpIGA(shp, shgl, C,shpIGA,shglIGA,xl)
+c        call getshpIGA(shp, shgl ,shpIGA,shglIGA,xl)
 c
 c
 c
@@ -62,7 +62,7 @@ c
         do intp = 1, ngauss
         if (Qwt(lcsyst,intp) .eq. zero) cycle          ! precaution
 c
-        call getshp(shpIGA,          shglIGA,      sgn,
+        call getshp(shp,          shgl,      sgn,
      &              shape,        shdrv)
 
 c

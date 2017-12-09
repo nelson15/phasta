@@ -1,6 +1,6 @@
         subroutine ElmGMR (u,         y,         ac,        x,
      &                     shp,       shgl,      iBC,
-     &                     BC,        shpb,      shglb, C,
+     &                     BC,        shpb,      shglb,
      &                     res,       iper,      ilwork,
      &                     rowp,      colm,     lhsK,
      &                     lhsP,      rerr,     GradV)
@@ -36,8 +36,7 @@ c
         dimension shp(MAXTOP,maxsh,MAXQPT),
      &            shgl(MAXTOP,1,maxsh,MAXQPT),
      &            shpb(MAXTOP,maxsh,MAXQPT),
-     &            shglb(MAXTOP,nsd,maxsh,MAXQPT),
-     &            C(num_elem_1D, ipord+1,ipord+1)
+     &            shglb(MAXTOP,nsd,maxsh,MAXQPT)
 c
         dimension qres(nshg,idflx),     rmass(nshg)
         dimension GradV(nshg,nsdsq)
@@ -171,6 +170,7 @@ c
 
           tmpshp(1:nshl,:) = shp(lcsyst,1:nshl1D,:)
           tmpshgl(:,1:nshl,:) = shgl(lcsyst,:,1:nshl1D,:)
+c  Arvind Commment here
           allocate (Cx(npro, ipord+1,ipord+1),Cy(npro, ipord+1,ipord+1),
           &            Cz(npro, ipord+1,ipord+1),)
           call AsIGMR (y,                   ac,

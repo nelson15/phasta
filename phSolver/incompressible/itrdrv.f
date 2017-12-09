@@ -3,7 +3,7 @@
      &                   iBC,       BC,
      &                   iper,      ilwork,     shp,
      &                   shgl,      shpb,       shglb,
-     &                   ifath,     velbar,     nsons , C)
+     &                   ifath,     velbar,     nsons )
 c
 c----------------------------------------------------------------------
 c
@@ -65,8 +65,7 @@ c
         real*8    shp(MAXTOP,maxsh,MAXQPT),
      &            shgl(MAXTOP,1,maxsh,MAXQPT),
      &            shpb(MAXTOP,maxsh,MAXQPT),
-     &            shglb(MAXTOP,nsd,maxsh,MAXQPT),
-     &            C(num_elem_1D, ipord+1,ipord+1)
+     &            shglb(MAXTOP,nsd,maxsh,MAXQPT)
 
 c
         integer   rowp(nshg,nnz),         colm(nshg+1),
@@ -393,7 +392,7 @@ c
      &                         x,             iBC,
      &                         BC,            res,
      &                         iper,
-     &                         ilwork,        shp,       shgl, C,
+     &                         ilwork,        shp,       shgl,
      &                         shpb,          shglb,     rowp,
      &                         colm,
      &                         solinc,        rerr,      tcorecp,

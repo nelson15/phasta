@@ -1,5 +1,5 @@
         subroutine e3b (ul,      yl,      acl,     iBCB,    BCB,
-     &                  shp,    shgl, C,
+     &                  shp,    shgl,
      &                  xlb,     rl,      sgn,     dwl,     xKebe)
 c
 c----------------------------------------------------------------------
@@ -53,7 +53,7 @@ c
 c
         dimension yl(npro,nshl,ndof),          iBCB(npro,ndiBCB),
      &            BCB(npro,nshlb,ndBCB),       shpb(nshl,ngaussb),
-     &            shglb(nsd,nshl,ngaussb),     C(num_elem_1D, ipord+1,ipord+1),
+     &            shglb(nsd,nshl,ngaussb),
      &            xlb(npro,nenl,nsd),          ul(npro,nshl,nsd),
      &            acl(npro,nshl,ndof),
      &            rl(npro,nshl,nflow)
@@ -99,7 +99,7 @@ c
 c
 c.... get the hierarchic shape functions at this int point
 c
-        call getshp(shp,        shgl,        C,  sgn, 
+        call getshp(shp,        shgl,          sgn,
      &              shape,       shdrv)
 c
 c     NOTE I DID NOT PASS THE lnode down.  It is not needed

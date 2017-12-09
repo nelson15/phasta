@@ -1,4 +1,4 @@
-        subroutine genshp (shp, shgl, nshp, nblk, C)
+        subroutine genshp (shp, shgl, nshp, nblk)
 c
 c----------------------------------------------------------------------
 c

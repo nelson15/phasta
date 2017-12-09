@@ -1,6 +1,6 @@
         subroutine gendat (y,       ac,       x,      iBC,     BC,
      &                     iper,    ilwork,
-     &                     shp,     shgl,  C,  shpb,    shglb,
+     &                     shp,     shgl,   shpb,    shglb,
      &                     ifath,   velbar,   nsons )
 c
 c----------------------------------------------------------------------
@@ -33,7 +33,6 @@ c.... shape function declarations
 c
         dimension shp(MAXTOP,maxsh,MAXQPT),
      &            shgl(MAXTOP,1,maxsh,MAXQPT),
-     &            C(num_elem_1D, ipord+1,ipord+1),
      &            shpb(MAXTOP,maxsh,MAXQPT),
      &            shglb(MAXTOP,nsd,maxsh,MAXQPT)
 c
@@ -99,7 +98,7 @@ c
 c
 c.... generate the interior nodal mapping
 c
-        call genshp ( shp, shgl, nshape, nelblk, C)
+        call genshp ( shp, shgl, nshape, nelblk)
 c
 c.... --------------------->  Boundary Conditions  <-------------------
 c

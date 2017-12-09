@@ -30,7 +30,6 @@ c.... shape function declarations
 c
         dimension shp(MAXTOP,maxsh,MAXQPT),
      &            shgl(MAXTOP,1,maxsh,MAXQPT),
-     &            C(num_elem_1D, ipord+1,ipord+1),
      &            shpb(MAXTOP,maxsh,MAXQPT),
      &            shglb(MAXTOP,nsd,maxsh,MAXQPT)
 c
@@ -59,7 +58,7 @@ c
         call gendat (y,              ac,             point2x,
      &               iBC,            BC,
      &               point2iper,     point2ilwork,   shp,
-     &               shgl, C,          shpb,           shglb,
+     &               shgl,           shpb,           shglb,
      &               point2ifath,    velbar,         point2nsons )
         call setper(nshg)
         call perprep(iBC,point2iper,nshg)
@@ -220,7 +219,7 @@ c
      &               iBC,            BC,
      &               point2iper,     point2ilwork,   shp,
      &               shgl,           shpb,           shglb,
-     &               point2ifath,    velbar,         point2nsons , C)
+     &               point2ifath,    velbar,         point2nsons )
 c
 c.... return
 c

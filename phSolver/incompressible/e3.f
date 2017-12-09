@@ -1,5 +1,5 @@
         subroutine e3 (yl,      acl,     dwl,     shp,
-     &                 shgl,   C1, C2, C3,  xl,      rl,      ql,
+     &                 shgl,  xl,      rl,      ql,
      &                 xKebe,   xGoC,    xmudmi,  sgn,
      &                 rerrl, rlsl)
 c
@@ -40,8 +40,6 @@ c
         dimension yl(npro,nshl,ndof),
      &            acl(npro,nshl,ndof),
      &            shp(nshl1D,ngauss1D),       shgl(1,nshl1D,ngauss1D),
-     &            Cx(npro, ipord+1,ipord+1),Cy(npro, ipord+1,ipord+1),
-     &            Cz(npro, ipord+1,ipord+1),
      &            xl(npro,nenl,nsd),      dwl(npro,nenl),
      &            rl(npro,nshl,nflow),     ql(npro,nshl,idflx)
 c
@@ -78,7 +76,7 @@ c.... local reconstruction of diffusive flux vector for quadratics
 c     or greater but NOT for bflux since local mass was not mapped
 c
         if ( idiff==2 .and. ires .eq. 1 ) then
-           call e3ql (yl,        dwl,       shp,       shgl, Cx, Cy, Cz
+           call e3ql (yl,        dwl,       shp,       shgl,
      &                xl,        ql,        xmudmi,
      &                sgn)
         endif
