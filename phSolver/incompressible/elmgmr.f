@@ -297,7 +297,7 @@ c
           call AsBMFG (u,                       y,
      &                 ac,                      x,
      &                 shpb,
-     &                 shglb, C,
+     &                 shglb,
      &                 mienb(iblk)%p,           mmatb(iblk)%p,
      &                 miBCB(iblk)%p,           mBCB(iblk)%p,
      &                 res,                     xKebe)

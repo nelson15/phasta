@@ -1,5 +1,5 @@
       subroutine AsBMFG (u,       y,       ac,      x,
-     &                   shpb,    shglb, C,
+     &                   shpb,    shglb,
      &                   ienb,    materb,  iBCB,    BCB,
      &                   res,     xKebe)
 c
@@ -20,7 +20,6 @@ c
      &            ac(nshg,ndofl),          u(nshg,nsd),
      &            shp(nshl,ngaussb),
      &            shgl(nsd,nshl,ngaussb),
-     &            C(num_elem_1D, ipord+1,ipord+1)
      &            ienb(npro,nshl),         materb(npro),
      &            iBCB(npro,ndiBCB),       BCB(npro,nshlb,ndBCB),
      &            res(nshg,nflow),        dwl(npro,nenl)
