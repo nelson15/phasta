@@ -36,7 +36,7 @@ c------------------------------------------------------------------------
 
       dimension shp(nshl,ngauss),   shgl(1,nshl,ngauss),
      &          sgn(npro,nshl),     shape(npro,nshl),
-     &          shdrv(npro,nsd,nshl),
+     &          shdrv(npro,nsd,nshl)
 c     &          Cx(npro,ipord+1,ipord+1), Cy(npro,ipord+1,ipord+1),
 c     &          Cz(npro,ipord+1,ipord+1)
 c
@@ -73,7 +73,7 @@ c we need to get the coords of that gauss point via
             enddo
          enddo
        enddo
-       do itr=1,ipord+1
+       do itr=1,nenl
          shape(:,itr) = tCx(:,itr,i)*tCy(:,itr,j)*tCz(:,itr,k)
          shdrv(1,:,itr) = tCgx(:,itr,i)*tCy(:,itr,j)*tCz(:,itr,k)
          shdrv(2,:,itr) = tCx(:,itr,i)*tCgy(:,itr,j)*tCz(:,itr,k)
