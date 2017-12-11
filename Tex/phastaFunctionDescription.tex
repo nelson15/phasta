@@ -1,0 +1,92 @@
+\documentclass[./]{subfiles}
+
+%Code Descriptions
+\begin{document}
+Here, we describe the functionality of the major subroutines found in \code{phSolver}. This section is divided by file. Some of the \code{Sclr} versions of various subroutines are not described, as they have identical responsibilities to their non \code{Sclr} counterparts though for a scalar problem, as opposed to the full Navier-Stokes problem.
+\subsection{asbflx.f}
+\code{AsBFlx()} is responsible for the assembly of flux terms at boundary elements into the global system. The residual term is computed via a call to \code{e3b()}. The LHS matrix is assembled via a call to \code{f3lhs()} which also computes the boundary normal of each element.
+
+\subsection{asbmfg.f}
+\code{AsBMFG()} is responsible for assembling all other boundary terms into the global system. This is done through a cll to \code{e3b()} to compute a element local residual \code{rl} which is then assembled into \code{res}.
+
+Similarly, \code{AsBMFGSclr()} assembles the residual for a scalar problem into the global system via a call to \code{e3bSclr()} which returns the element level residual \code{rtl}.
+
+\subsection{asigmr.f}
+\code{AsIGMR()} is responsible for assembling the residual and LHS matrix for the interior elements through a call to \code{e3()} over each element. \code{EGmass} is computed in \code{e3()} and assembled into a block-diagonal form \code{BDiagl} which is assembled into the global block diagonal matrix \code{BDiag}.
+
+\subsection{asiq.f}
+\code{AsIq()} is responsible for assembling data over interior elements in order to reconstruct the global diffusive flux vector. This is done through a call to \code{e3q()} on each element to build the local diffusive flux vector \code{ql} which is then assembled into \code{qres}
+
+\subsection{bc3lhs.f}
+\code{bc3LHS()} is responsible for satisfying boundary conditions at the element level for the LHS mass matrix. Effectively, over all Dirichlet boundary conditions, the row of the LHS matrix must be zeroed out, and a 1 placed in the diagonal component of the corresponding row. This subroutine is responsible for performing this operation for all implemented boundary conditions.
+
+\subsection{bc3per.f}
+\code{bc3per()} is responsible for applying periodic boundary conditions by setting the rows corresponding to the pair of periodic boundary locations to equal eachother.
+
+\subsection{bc3res.f}
+\code{bc3Res()} is responsible for applying boundary conditions to the residual vector. This is done utilizing the same logic as \code{bc3lhs()}, but Diriclet BC values are added to the residual vector at BC locations.
+
+\subsection{BCprofile.f}
+\code{initBCprofileScale()} is responsible for reading in user set boundary condition profiles, such as ramped inlet profiles etc. 
+
+\subsection{bflux.f }
+\code{Bflux()} is responsible for computing boundary fluxes and writing the computed fluxes to a file along with printing the primitive variables to another file. First, the variables stored in \code{y} are scaled from dimensionless form to dimensional form. Fluxes are computed through a call to \code{AsIFlx()} and \code{AsBFlx()} which compute \code{flxLHS}, \code{flxres} and \code{flxnrm}, the flux LHS, flux residual and outward normal vector of boundary elements. These are then used to solve for fluxes through boundaries.
+
+\subsection{e3.f }
+\code{e3()} is responsible for for computing the RHS residual of a 3D element, and is also capable of computing a modified residual and a block-diagonal preconditioner for an element. This is accomplished via a slough of calls to functions each of which computes a component of the local system:
+\begin{enumerate}
+\item \code{e3ivar()} computes the values of all the integration variables at a single point within the element including all components of velocity, temperature, pressure, enthalpy, internal energy etc (see code for full list)
+\item \code{e3mtrx()} computes variable transform matrices \code{A\_0}, \code{A\_1}, \code{A\_2} and \code{A\_3} at a point in an element.
+\item \code{e3conv()} computes the convection contribution to the standard Galerkin form of the Navier-Stokes. 
+\item \code{e3visc()} computes the viscous contribution to the standard Galerkin form of the Navier-Stokes.
+\item \code{e3source()} computes body force contributions.
+\item \code{e3LS()} computes the Least-Squares components to the stabilized Galerkin form. This computes the SUPG terms.
+\item \code{e3massr()} computes element level contribution to the mass residual vector.
+\item \code{e3massl()} computes the element level contribution to the mass LHS matrix.
+\item \code{e3bdg()} computes the element level contribution to the block diagonal preconditioner matrix.
+\end{enumerate}
+
+\subsection{e3b.f }
+\code{e3b()} is responsible for putting together the RHS residual of the boundary elements. This is done with similar logic to the RHS computation done over interior elements in \code{e3()}, though with fewer external function calls. For instance, terms related to the pressure, convective, viscous and heat fluxes are computed within \code{e3b()}. Variable quantities are found via a call to \code{e3bvar()}. Material properties of the fluid are needed, and are found in a call to \code{getDiff()}.
+
+\subsection{e3bvar.f} 
+\code{e3bvar()} is responsible for computing variable values at a point on a surface of a boundary element. Here, temperature, pressure and velocity components are computed, along with kinetic energy and several thermodynamic properties (via a call to \code{getthrm()}). Along with variable values, element metrics such as normal vectors and parametric derivatives are computed. 
+
+\subsection{e3dc.f }
+\code{e3dc()} is responsible for computing terms for the residual vector related to discontinuity capturing. This process allows for shocks to be computed within the fluid volume.
+
+\subsection{e3q.f}	 
+\code{e3q()} is responsible for computing the element level contribution to the diffusive flux vector and the lumped mass matrix. This is accomplished through a call to \code{e3qvar()} to compute basis function gradients, element metrics and state variable values, and a call to \code{getDiff()} for material properties ($\rho$, $c_p$, etc.).
+
+\subsection{e3ql.f} 
+\code{e3ql()} performs the same job as \code{e3q()} in computing the diffusive flux vector, but this uses a different method. This utilizes a local projection of the vector, rather than mapping from parametric to physical space via multiplication by the determinant of the element Jacobian. 
+
+\subsection{e3qvar.f }
+\code{e3qvar()} is similar to \code{e3ivar()} and \code{e3bvar()} in that it computes variable values required for its corresponding element construction subroutine (\code{e3q()} in this case). 
+
+\subsection{elmgmr.f}
+\code{ElmGMRs()} is responsible for putting together the various data structures required for the GMRes solver. These are the LHS matrix, the RHS residual vector and the block diagonal preconditioner. First, a number of parameters are setup pertaining to the blocks of element topologies living in the fluid domain discretization such as \code{nenl} the number of vertices per element in the block, \code{ndofl} the number of degrees of freedom in an element, \code{ngauss} the number of quadrature points on the element, etc. Then, assembly operations are called. \code{AsIq()} assembles the diffusive flux vector components in the interior of the domain, \code{AsIGMR()} assembles the residual and tangent matrix of interior elements, \code{AsBMFG} takes care of boundary integral assembly. A number of boundary condition handling functions are also called to ensure that the desired boundary conditions are satisfied for each assembled component of the global system. These are: \code{bc3LHS()} which handles boundary conditions on the LHS matrix, \code{qpbc()} which handles periodic boundary conditions on the diffusive flux term and \code{rotabc()} which is responsible for handling axisymmetric boundary conditions via periodicity. Along with these, a call is made to \code{bc3Res()} which applies boundary conditions to the global residual vector, and finally a call is made to \code{bc3BDg()} to apply boundary conditions to the block diagonal preconditioner matrix. 
+
+\subsection{itrbc.f}
+\code{iterBC()} is responsible for satisfying boundary conditions on the $Y$ set of variables. This is done in a straightforward fashion, utilizing the \code{BC} and \code{iBC} arrays to compute boundary conditions. These conditions are cast back to the $Y$ vector.
+
+\subsection{itrdrv.f}
+\code{itrdrv()} is responsible for time stepping via the Generalized-$\alpha$ method. This function is essentially the top of the solver hierarchy. This function makes a call per time step inner iteration to a GMRes solver via the \code{SolGMR()} family of functions for the linear system solution. 
+
+\subsection{itrPC.f}
+This file is responsible for the subroutines needed for the predictor-multicorector method within the Generalized-$\alpha$ method.
+\begin{enumerate}
+\item \code{itrSetup()} is responsible for setting the parameters used in the predictor-multicorrector method.
+\item \code{itrPredict()} performs the prediction of the solution at time step \code{n+1}, updating the variables \code{y} and \code{yc} along with their past values \code{yold} and \code{acold} with the next prediction on the inner loop.
+\item \code{itrCorrect} is responsible for the correction step of the predictor-multicorrector method. This is done by computing $Y_{n+1} = Y_n - \Delta Y$.
+\item \code{itrUpdate()} updates the solution variables at the end of the given time step.
+\end{enumerate}
+
+\subsection{solgmr.f}
+This file contains subroutines for completing a GMRes solve of the global system. There are two methods contained in this file. One GMRes solver for a sparse matrix solve, and another for an element-by-element solve. 
+\begin{enumerate}
+\item \code{SolGMRe()} computes a GMRes solve on an element by element basis. This is done via a local assembly of the variable \code{EGmass} which is multiplied successively by a local vector to build up a local Krylov space which is used to build the linear system solution globally. 
+\item \code{SolGMRs()} performs a global system solve via a sparse matrix solve.  element level mass matrices have been assembled into a global sparse matrix, and then that sparse matrix is successively multiplied by vectors to build up the Krylov space of the global system, which is then used to build the solution to the global linear system. 
+\end{enumerate}
+
+\end{document}

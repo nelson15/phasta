@@ -1,0 +1,155 @@
+\documentclass[preprint,1p,12pt]{elsarticle}
+
+\usepackage{titlesec}
+\usepackage{subfiles}
+
+%% MATLAB STUFF
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{listings}
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+
+\def\code#1{\texttt{#1}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%% Use the option review to obtain double line spacing
+%% \documentclass[preprint,review,12pt]{elsarticle}
+
+%% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
+%% for a journal layout:
+%% \documentclass[final,1p,times]{elsarticle}
+%% \documentclass[final,1p,times,twocolumn]{elsarticle}
+%% \documentclass[final,3p,times]{elsarticle}
+%% \documentclass[final,3p,times,twocolumn]{elsarticle}
+%% \documentclass[final,5p,times]{elsarticle}
+%% \documentclass[final,5p,times,twocolumn]{elsarticle}
+
+%% if you use PostScript figures in your article
+%% use the graphics package for simple commands
+ \usepackage{graphics}
+%% or use the graphicx package for more complicated commands
+ \usepackage{graphicx}
+%% or use the epsfig package if you prefer to use the old commands
+%% \usepackage{epsfig}
+
+%% The amssymb package provides various useful mathematical symbols
+\usepackage{amssymb}
+\usepackage{amsmath}
+%% The amsthm package provides extended theorem environments
+%% \usepackage{amsthm}
+
+%set page margins to 1in all around
+\geometry{margin={1in,1in}}
+\parskip = 12pt
+\titlespacing{\subsection}{6pt}{\parskip}{-6pt}
+\titlespacing{\section}{12pt}{0pt}{12pt}
+
+\journal{ASEN5331 - Unstructured Grid CFD}
+
+\begin{document}
+
+\begin{frontmatter}
+
+%% Title, authors and addresses
+
+%% use the tnoteref command within \title for footnotes;
+%% use the tnotetext command for the associated footnote;
+%% use the fnref command within \author or \address for footnotes;
+%% use the fntext command for the associated footnote;
+%% use the corref command within \author for corresponding author footnotes;
+%% use the cortext command for the associated footnote;
+%% use the ead command for the email address,
+%% and the form \ead[url] for the home page:
+%%
+%% \title{Title\tnoteref{label1}}
+%% \tnotetext[label1]{}
+%% \author{Name\corref{cor1}\fnref{label2}}
+%% \ead{email address}
+%% \ead[url]{home page}
+%% \fntext[label2]{}
+%% \cortext[cor1]{}
+%% \address{Address\fnref{label3}}
+%% \fntext[label3]{}
+
+\title{A Phasta Implementation of Isogeometric B-Spline Basis Functions for Structured CFD}
+
+%% use optional labels to link authors explicitly to addresses:
+%% \author[label1,label2]{<author name>}
+%% \address[label1]{<address>}
+%% \address[label2]{<address>}
+
+\author{Corey Nelson}
+
+%%\address{}
+
+%\begin{keyword}
+%% keywords here, in the form: keyword \sep keyword
+
+%% MSC codes here, in the form: \MSC code \sep code
+%% or \MSC[2008] code \sep code (2000 is the default)
+
+%\end{keyword}
+
+\end{frontmatter}
+
+%%
+%% Start line numbering here if you want
+%%
+% \linenumbers
+
+%% main text
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+Over the last decade, Isogeometric Analysis (IGA) has rapidly matured as a high order numerical method for solving problems in solid mechanics and fluid dynamics. Since the seminal paper was published in 2005 \cite{hughes_isogeometric_2005}, dozens of fields have enjoyed the high-order accurate benefits of IGA, and computational fluid dynamics is certainly among them. In this project, we hope to bring some IGA capability to the legacy CFD code known as Phasta. 
+
+The goal of this project is to implement a B-spline hexahedral element into the Phasta framework. The element will be defined in the context of a structured cube domain, so much of the complexity of mesh generation will be avoided in this first pass. The efficacy of the proposed element will be evaluated with a Taylor-Green Vortex test case. We anticipate the Isogeometric element will produce more accurate result than the current classical Finite Element bases employed currently in Phasta, though at a higher computational cost. 
+
+The Isogeometric element will take the form of a set of local Bernstein polynomial basis functions which will be mapped to global B-spline bases through a process known as \textit{B\`{e}zier Extraction}. This extraction process is a complexity not employed in classical Finite elements, and is thus the major complexity to implement in Phasta. 
+
+The thrust of this project will be to provide the extraction operators and basis functions, and Arvind Raghunath Dudi will develop the infrastructure throughout the code base to pass around the extraction operator. Thus, the two of us are working closely to provide a cohesive implementation of the IGA technology. 
+
+\section{Mathematical Preliminaries}
+\subsection{Bernstein Polynomials}
+\subfile{bernstein_polynomials}
+
+\subsection{B-Splines}
+\subfile{b-splines}
+
+\subsection{Bezier Extraction}
+\subfile{bezier_extraction}
+
+\section{Proposed Implementation}
+\subfile{implementation}
+
+\section{Descriptions of Phasta Functions}
+\subfile{phastaFunctionDescription}
+
+% \newpage
+\section{References}\label{Ref}
+%% References with bibTeX database:
+ \bibliographystyle{model1-num-names}
+\bibliography{PhastaIGA}
+
+%% Authors are advised to submit their bibtex database files. They are
+%% requested to list a bibtex style file in the manuscript if they do
+%% not want to use model1-num-names.bst.
+
+%% References without bibTeX database:
+
+% \begin{thebibliography}{00}
+
+%% \bibitem must have the following form:
+%%   \bibitem{key}...
+%%
+
+% \bibitem{}
+
+% \end{thebibliography}
+
+
+\end{document}
+
+%%
+%% End of file `elsarticle-template-1-num.tex'.

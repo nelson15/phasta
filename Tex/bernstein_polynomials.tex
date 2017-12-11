@@ -1,0 +1,16 @@
+\documentclass[./]{subfiles}
+
+%Bernstein Polynomials
+\begin{document}
+Bernstein polynomials are defined over $\xi \in [0,1]$ as 
+\begin{alignat}{3}
+B_{a, p}(\xi) &= (1-\xi) B_{a, p-1}(\xi) + \xi B_{a-1,p-1}(\xi), \\
+B_{1, 0}(\xi) &= 1, \\
+B_{a, p}(\xi) &= 0 \text{ if } a<1 \text{ or } a > p+1.
+\end{alignat}
+
+These polynomials have several handy properties with regard to their implementation as a basis for analysis. First, they are interpolatory at the endpoints of the domain $[0,1]$, and are a partition of unity, i.e.:
+\begin{equation*}
+\sum_{a=1}^{p+1} B_{a,p}(\xi) = 1.
+\end{equation*}
+\end{document}

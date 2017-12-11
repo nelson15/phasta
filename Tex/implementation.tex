@@ -1,0 +1,37 @@
+\documentclass[./]{subfiles}
+
+%Implementation
+\begin{document}
+\subsection{New Subroutines}
+The major subroutines to implement surround the construction of the Extraction operator and the definitions of the inputs for that subroutine.
+\begin{enumerate}
+\item \code{knotVecCreate()} creates a knot vector suitable for the the definition of the extraction operator and the basis functions. This subroutine takes in a start and end point for a domain in 1D (often 0 and 1, but these are parameters) and a number of elements, and returns an open knot vector with the number of open knots relating to the number of elements desired across the domain in 1D. 
+\item \code{BasisFuncsAndDers()} returns the value of all the basis functions an their derivatives defined at a point in the domain. These can be Bernstein polynomials or full B-spline bases depending on the knot vector passed in. An open knot vector with no interior knots will return Bernstein bases of order $p$ - the desired polynomial order. 
+\begin{itemize}
+	\item \code{FindSpan()} is a subroutine that finds the knot span in which the selected point lives. it is requried for computing B-spline bases.
+\end{itemize}
+\item \code{Extraction\_1D()} returns the extraction operator in 1D for a given knot span and polynomial order $p$. 
+\item \code{shphexIGA()} packages all these functions up into a fortran interface which returns the bases, their derivatives and the extraction operator. This function will be largely based on the \code{shphex()} routine currently in Phasta. The key difference is that \code{shphexIGA()} will also return the extraction operator. This leads to the major implementation change needed to be made in Phasta.
+\end{enumerate}
+
+\subsection{Phasta Subroutines to Modify}
+Because the extraction operator must be passed around the solver, we require adding the extraction operator array to the list of arrays already passed around. This will be accomplished by adding another array to the top of \code{genshp()}: \code{extrct(nel1D, p+1, p+1)}. The extraction operator per element is a square matrix of size $p+1$, and can be stored in each spatial direction for a tensor product domain. Thus, this 1D extraction operator is all that is required for storage. 
+
+Several other minor changes are being made to the code to hardcode our Taylor Green vortex problem, and interface our data structure with the rest of the code. Primarily, this involves adding global variables to \code{common.h} and the corresponding \code{common\_c.h}.
+
+\begin{enumerate}
+\item ADD \code{HexIGAShapeAndDrv()} function primitive to \code{topo\_shapedefs.h}, the header file containing function primitives for the element shape functions.
+\item  ADD \code{HexIGAShapeAndDrv()} definition to \code{newshape.cc}, the source code for element shape functions.
+\item  ADD \code{switch} case (6) to \code{genshp.f} to call \code{shphexIGA()}. \code{genshp()} is responsible for building the list of element blocks of each different topologies via a switch statement. We set the switch condition for our implementation to only hit the block of IGA elements. That way, we can ensure our test case is built only of our IGA elements.
+\item  CREATE new function \code{shphexIGA()} as a fortran wrapper to get IGA shape functions from \code{HexIGAShapeAndDrv()}
+\item  EDIT \code{genshp} to take in parameter \code{num\_elem\_1D} to define the number of elements along one side of the cube domain
+\item CHANGE in \code{common.h} line 18, \code{NSD = 1} instead of 3. Our implementation involves a tensor product of 1D basis functions, so setting this to 1 should ensure we only build our bases once. 
+\item  CHANGE in \code{common\_c.h} line 64, \code{NSD = 1} instead of 3
+\item  in \code{genshp.f} set \code{lcsyst = 6} to ensure only IGA hex elements are built
+\item  in \code{genshp.f} set \code{nshl   = ipord+1} to ensure number of shape functions are locally always $p+1$code
+\item  in \code{common\_c.h} \code{\#define num\_elem\_1D 16} to fix the domain of our test case to be $16^3$ elements.
+\item  in \code{common.h} line 18 add \code{num\_elem\_1D = 16} 
+\end{enumerate}
+
+It is largely the responsibility of Arvind to pipe the \code{extrct} data structure through the solver. He will write a function \code{shpIGA(extrct, shp, indices)} which computes the global bases for each element in the domain. This function will be called throughout the solver where currently the value of \code{shp()} is evaluated. Arvind is also writing a similar routine for computing global basis gradients. 
+\end{document}

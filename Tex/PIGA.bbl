@@ -1,0 +1,44 @@
+\begin{thebibliography}{5}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\providecommand{\bibinfo}[2]{#2}
+\ifx\xfnm\relax \def\xfnm[#1]{\unskip,\space#1}\fi
+%Type = Article
+\bibitem[{Hughes et~al.(2005)Hughes, Cottrell, and
+  Bazilevs}]{hughes_isogeometric_2005}
+\bibinfo{author}{T.~Hughes}, \bibinfo{author}{J.~Cottrell},
+  \bibinfo{author}{Y.~Bazilevs},
+\newblock \bibinfo{title}{Isogeometric analysis: {CAD}, finite elements,
+  {NURBS}, exact geometry and mesh refinement},
+\newblock \bibinfo{journal}{Computer Methods in Applied Mechanics and
+  Engineering} \bibinfo{volume}{194} (\bibinfo{year}{2005})
+  \bibinfo{pages}{4135--4195}.
+%Type = Article
+\bibitem[{de~Boor(1972)}]{de_boor_calculating_1972}
+\bibinfo{author}{C.~de~Boor},
+\newblock \bibinfo{title}{On calculating with {B}-splines},
+\newblock \bibinfo{journal}{Journal of Approximation Theory}
+  \bibinfo{volume}{6} (\bibinfo{year}{1972}) \bibinfo{pages}{50--62}.
+%Type = Book
+\bibitem[{Piegl and Tiller(2012)}]{piegl_nurbs_2012}
+\bibinfo{author}{L.~Piegl}, \bibinfo{author}{W.~Tiller}, \bibinfo{title}{The
+  {NURBS} book}, \bibinfo{publisher}{Springer Science \& Business Media},
+  \bibinfo{year}{2012}.
+%Type = Book
+\bibitem[{Austin~Cottrell et~al.(2009)Austin~Cottrell, J.~R.~Hughes, and
+  Bazilevs}]{austin_cottrell_isogeometric_2009}
+\bibinfo{author}{J.~Austin~Cottrell}, \bibinfo{author}{T.~J.~R.~Hughes},
+  \bibinfo{author}{Y.~Bazilevs}, \bibinfo{title}{Isogeometric {Analysis}:
+  {Toward} integration of {CAD} and {FEA}}, \bibinfo{year}{2009}.
+  \bibinfo{note}{DOI: 10.1002/9780470749081.ch7}.
+%Type = Article
+\bibitem[{Borden et~al.(2011)Borden, Scott, Evans, and
+  Hughes}]{borden_isogeometric_2011}
+\bibinfo{author}{M.~J. Borden}, \bibinfo{author}{M.~A. Scott},
+  \bibinfo{author}{J.~A. Evans}, \bibinfo{author}{T.~J.~R. Hughes},
+\newblock \bibinfo{title}{Isogeometric finite element data structures based on
+  {Bézier} extraction of {NURBS}},
+\newblock \bibinfo{journal}{International Journal for Numerical Methods in
+  Engineering} \bibinfo{volume}{87} (\bibinfo{year}{2011})
+  \bibinfo{pages}{15--47}.
+
+\end{thebibliography}
