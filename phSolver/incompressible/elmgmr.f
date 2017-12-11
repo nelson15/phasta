@@ -43,8 +43,7 @@ c
 c
         dimension ilwork(nlwork)
 
-        integer rowp(nshg*nnz),         colm(nshg+1),
-     &          temp
+        integer rowp(nshg*nnz),         colm(nshg+1)
 
         real*8 lhsK(9,nnz_tot), lhsP(4,nnz_tot)
 
@@ -56,6 +55,7 @@ c
         real*8, allocatable :: tmpshpb(:,:), tmpshglb(:,:,:)
 
         real*8 spmasstot(20),  ebres(nshg)
+        integer temp
 c
 c.... set up the timer
 c
@@ -81,7 +81,7 @@ c
              GradV = zero
            endif
            rmass = zero
-           open (unit=2,flie="extraction.txt")
+           open ( unit = 2 ,file = "extraction.txt")
            do iblk = 1, nelblk
               iel    = lcblk(1,iblk)
               lelCat = lcblk(2,iblk)
@@ -155,7 +155,7 @@ c
 c
 c.... loop over the element-blocks
 c
-        open (unit=2,flie="extraction.txt")
+        open ( unit = 2, file = "extraction.txt")
         do iblk = 1, nelblk
           iblock = iblk         ! used in local mass inverse (p>2)
           iblkts = iblk         ! used in timeseries
