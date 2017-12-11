@@ -44,6 +44,7 @@ c
         dimension ilwork(nlwork)
 
         integer rowp(nshg*nnz),         colm(nshg+1)
+     &          temp
 
         real*8 lhsK(9,nnz_tot), lhsP(4,nnz_tot)
 
@@ -80,7 +81,7 @@ c
              GradV = zero
            endif
            rmass = zero
-
+           open (unit=1,flie="extraction.txt")
            do iblk = 1, nelblk
               iel    = lcblk(1,iblk)
               lelCat = lcblk(2,iblk)
@@ -101,7 +102,19 @@ c CHECK ITH COREY FOR THIS IMPLEMENTATION
 c
 c.... compute and assemble diffusive flux vector residual, qres,
 c     and lumped mass matrix, rmass
-
+c  Arvind Commment here
+          allocate (Cx(npro, ipord+1,ipord+1),Cy(npro, ipord+1,ipord+1),
+     &              Cz(npro, ipord+1,ipord+1))
+          read(2,*) temp
+          do j=1,ipord+1
+            read(2,*) Cx(:,j,1),Cx(:,j,2),Cx(:,j,3),Cx(:,j,4)
+          enddo
+          do j=1,ipord+1
+            read(2,*) Cy(:,j,1),Cy(:,j,2),Cy(:,j,3),Cy(:,j,4)
+          enddo
+          do j=1,ipord+1
+            read(2,*) Cz(:,j,1),Cz(:,j,2),Cz(:,j,3),Cz(:,j,4)
+          enddo
             if(iter == nitr .and. icomputevort == 1 ) then
                !write(*,*) 'Calling AsIqGradV'
                call AsIqGradV (y,                x,
@@ -116,7 +129,7 @@ c     and lumped mass matrix, rmass
      &                   mien(iblk)%p,     mxmudmi(iblk)%p,
      &                   qres,             rmass )
            enddo
-
+           close(2)
 c
 c.... form the diffusive flux approximation
 c
@@ -142,6 +155,7 @@ c
 c
 c.... loop over the element-blocks
 c
+        open (unit=1,flie="extraction.txt")
         do iblk = 1, nelblk
           iblock = iblk         ! used in local mass inverse (p>2)
           iblkts = iblk         ! used in timeseries
@@ -150,13 +164,18 @@ c
           lcsyst = lcblk(3,iblk)
           iorder = lcblk(4,iblk)
           nenl   = lcblk(5,iblk) ! no. of vertices per element
-          nshl   = lcblk(10,iblk)
+c              nshl   = lcblk(10,iblk)
+          nshl   = 64
+          nshl1D = 4
           mattyp = lcblk(7,iblk)
           ndofl  = lcblk(8,iblk)
           nsymdl = lcblk(9,iblk)
           npro   = lcblk(1,iblk+1) - iel
           inum   = iel + npro - 1
-          ngauss = nint(lcsyst)
+c         ngauss = nint(lcsyst)
+c CHECK ITH COREY FOR THIS IMPLEMENTATION
+          ngauss1D=  nint(lcsyst)
+          ngauss  = ngauss1D*ngauss1D*ngauss1D
 c
 c.... allocate the element matrices
 c
@@ -173,6 +192,16 @@ c
 c  Arvind Commment here
           allocate (Cx(npro, ipord+1,ipord+1),Cy(npro, ipord+1,ipord+1),
      &              Cz(npro, ipord+1,ipord+1))
+          read(2,*) temp
+          do j=1,ipord+1
+            read(2,*) Cx(:,j,1),Cx(:,j,2),Cx(:,j,3),Cx(:,j,4)
+          enddo
+          do j=1,ipord+1
+            read(2,*) Cy(:,j,1),Cy(:,j,2),Cy(:,j,3),Cy(:,j,4)
+          enddo
+          do j=1,ipord+1
+            read(2,*) Cz(:,j,1),Cz(:,j,2),Cz(:,j,3),Cz(:,j,4)
+          enddo
           call AsIGMR (y,                   ac,
      &                 x,                   mxmudmi(iblk)%p,
      &                 tmpshp,
@@ -201,6 +230,7 @@ c
 c.... end of interior element loop
 c
        enddo
+       close(2)
 c$$$       if(ibksiz.eq.20 .and. iwrote.ne.789) then
 c$$$          do i=1,nshg
 c$$$             write(789,*) 'eqn block ',i
