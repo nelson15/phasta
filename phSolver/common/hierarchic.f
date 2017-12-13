@@ -31,45 +31,43 @@ c------------------------------------------------------------------------
 c------------------------------------------------------------------------
 c     returns the matrix of element shape functions with the higher
 c     order modes correctly negated at the current quadrature point.
+c     shape(npro,nshl): Shape function at all points in the eement block
+c     shdrv(npro,nsd,nshl): Gradient of the shape function in all directions
+c     Cx(npro, ipord+1,ipord+1): Extraction operator in the x-direction
+c     Cy(npro, ipord+1,ipord+1): Extraction operator in the y-direction
+c     Cz(npro, ipord+1,ipord+1): Extraction operatop in the z-direction
+c     tCx(npro, ipord+1,ngauss): B-Spline basis in the x-direction
+c     tCy(npro, ipord+1,ngauss): B-Spline basis in the y-direction
+c     tCz(npro, ipord+1,ngauss): B-Spline basis in the z-direction
+c     i,j,k: gauss points in x, y and z directions
+c     Rewritten by Arvind Dudi Raghunath, Fall 2017
 c------------------------------------------------------------------------
       include "common.h"
 
       dimension shp(nshl,ngauss),   shgl(1,nshl,ngauss),
      &          sgn(npro,nshl),     shape(npro,nshl),
      &          shdrv(npro,nsd,nshl)
-c
+c These are temporary arrays used to compute the matrix product and help with
+c the tensor product
       double precision tCx(npro,ipord+1,ngauss),tCy(npro,ipord+1,ngauss)
      &                 ,tCz(npro,ipord+1,ngauss)
       double precision tCgx(npro,ipord+1,ngauss),tCgy(npro,ipord+1,ngauss)
      &                 ,tCgz(npro,ipord+1,ngauss)
+       integer i,j,k
       tCx(:,:,:)=0.0d0
       tCy(:,:,:)=0.0d0
       tCz(:,:,:)=0.0d0
       tCgx(:,:,:)=0.0d0
       tCgy(:,:,:)=0.0d0
       tCgz(:,:,:)=0.0d0
-c      real*8  shglIGA(nshl,ngauss)
-c      shglIGA(1:nshl,1:ngauss)= shgl(1,1:nshl,1:ngauss)
 
 c we have access to INTP which is the gauss point
 c we need to get the coords of that gauss point via
        k = intp / (ngauss1D*ngauss1D);
        j = (intp - k*ngauss1D*ngauss1D) / ngauss1D;
        i = intp - k*ngauss1D*ngauss1D - j*ngauss1D;
+c Computing various matrix products
        do ipro=1, npro
-c         do ipar=1,ipord+1
-c           do jpar=1,nshl
-c            tCx(ipro,ipar,i)=tCx(ipro,ipar,i)+Cx(ipro,ipar,jpar)*shp(jpar,i)
-c            tCy(ipro,ipar,j)=tCy(ipro,ipar,j)+Cy(ipro,ipar,jpar)*shp(jpar,j)
-c            tCz(ipro,ipar,k)=tCz(ipro,ipar,k)+Cz(ipro,ipar,jpar)*shp(jpar,k)
-c            tCgx(ipro,ipar,i)=tCgx(ipro,ipar,i)+Cx(ipro,ipar,jpar)*
-c     &                        shgl(1,jpar,i)
-c            tCgx(ipro,ipar,i)=tCgx(ipro,ipar,i)+Cx(ipro,ipar,jpar)*
-c     &                        shgl(1,jpar,i)
-c            tCgx(ipro,ipar,i)=tCgx(ipro,ipar,i)+Cx(ipro,ipar,jpar)*
-c     &                        shgl(1,jpar,i)
-c            enddo
-c         enddo
         tCx(ipro,:,i)=matmul(Cx(ipro,:,:),shp(:,i))
         tCy(ipro,:,j)=matmul(Cy(ipro,:,:),shp(:,j))
         tCz(ipro,:,k)=matmul(Cz(ipro,:,:),shp(:,k))

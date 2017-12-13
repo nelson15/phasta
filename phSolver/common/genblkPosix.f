@@ -13,8 +13,7 @@ c
         use iso_c_binding
         include "common.h"
         include "mpif.h" !Required to determine the max for itpblk
-c Change made by Arvind Dudi Raghunath for inclusion of extraction oprerator in
-c each direction
+c Change made by Arvind Dudi Raghunath for IEN array being mannulay read in
         integer, target, allocatable :: ientp(:,:)
         integer mater(ibksz)
         integer, target :: intfromfile(50) ! integers read from headers

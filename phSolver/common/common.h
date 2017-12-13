@@ -110,6 +110,8 @@ c
 c
         common /blkdat/ lcblk(10,MAXBLK+1),      lcblkb(10,MAXBLK+1)
 c
+c These are the extraction operators in the respective directions
+c 
 			  double precision, allocatable :: Cx(:,:,:),  Cy(:,:,:), Cz(:,:,:)
 c
         common /mbndnod/ mnodeb(9,8,3)
@@ -173,6 +175,8 @@ c
 c
         common /shpdat/ nshape, nshapeb, maxshb,
 c                       nshl, nshlb,nfath,  ntopsh,  nsonmax
+c Change made by Arvind Dudi Raghunath to include nshl1D for the purpose of
+c resizing the shp and shgl for hexIGA case
      &                  nshl,nshl1D, nshlb,nfath,  ntopsh,  nsonmax
 c
         common /melmcat/ mcsyst, melCat, nenCat(8,3),    nfaCat(8,3)
