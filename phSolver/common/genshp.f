@@ -63,7 +63,7 @@ c
                maxnint=max(maxnint,nint(lcsyst))
             do i=1,nint(lcsyst)
                call shphexIGA  (ipord, i, shp(6,:,i),
-     &                       shgl(6,1,:,i))
+     &                       shgl(6,:,:,i))
             enddo
 c
 c.... nonexistent element
