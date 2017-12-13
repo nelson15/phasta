@@ -37,8 +37,6 @@ c------------------------------------------------------------------------
       dimension shp(nshl,ngauss),   shgl(1,nshl,ngauss),
      &          sgn(npro,nshl),     shape(npro,nshl),
      &          shdrv(npro,nsd,nshl)
-c     &          Cx(npro,ipord+1,ipord+1), Cy(npro,ipord+1,ipord+1),
-c     &          Cz(npro,ipord+1,ipord+1)
 c
       double precision tCx(npro,ipord+1,ngauss),tCy(npro,ipord+1,ngauss)
      &                 ,tCz(npro,ipord+1,ngauss)
@@ -59,19 +57,25 @@ c we need to get the coords of that gauss point via
        j = (intp - k*ngauss1D*ngauss1D) / ngauss1D;
        i = intp - k*ngauss1D*ngauss1D - j*ngauss1D;
        do ipro=1, npro
-         do ipar=1,ipord+1
-           do jpar=1,nshl
-            tCx(ipro,ipar,i)=tCx(ipro,ipar,i)+Cx(ipro,ipar,jpar)*shp(jpar,i)
-            tCy(ipro,ipar,j)=tCy(ipro,ipar,j)+Cy(ipro,ipar,jpar)*shp(jpar,j)
-            tCz(ipro,ipar,k)=tCz(ipro,ipar,k)+Cz(ipro,ipar,jpar)*shp(jpar,k)
-            tCgx(ipro,ipar,i)=tCgx(ipro,ipar,i)+Cx(ipro,ipar,jpar)*
-     &                        shgl(1,jpar,i)
-            tCgx(ipro,ipar,i)=tCgx(ipro,ipar,i)+Cx(ipro,ipar,jpar)*
-     &                        shgl(1,jpar,i)
-            tCgx(ipro,ipar,i)=tCgx(ipro,ipar,i)+Cx(ipro,ipar,jpar)*
-     &                        shgl(1,jpar,i)
-            enddo
-         enddo
+c         do ipar=1,ipord+1
+c           do jpar=1,nshl
+c            tCx(ipro,ipar,i)=tCx(ipro,ipar,i)+Cx(ipro,ipar,jpar)*shp(jpar,i)
+c            tCy(ipro,ipar,j)=tCy(ipro,ipar,j)+Cy(ipro,ipar,jpar)*shp(jpar,j)
+c            tCz(ipro,ipar,k)=tCz(ipro,ipar,k)+Cz(ipro,ipar,jpar)*shp(jpar,k)
+c            tCgx(ipro,ipar,i)=tCgx(ipro,ipar,i)+Cx(ipro,ipar,jpar)*
+c     &                        shgl(1,jpar,i)
+c            tCgx(ipro,ipar,i)=tCgx(ipro,ipar,i)+Cx(ipro,ipar,jpar)*
+c     &                        shgl(1,jpar,i)
+c            tCgx(ipro,ipar,i)=tCgx(ipro,ipar,i)+Cx(ipro,ipar,jpar)*
+c     &                        shgl(1,jpar,i)
+c            enddo
+c         enddo
+        tCx(ipro,:,i)=matmul(Cx(ipro,:,:),shp(:,i))
+        tCy(ipro,:,j)=matmul(Cy(ipro,:,:),shp(:,j))
+        tCz(ipro,:,k)=matmul(Cz(ipro,:,:),shp(:,k))
+        tCgx(ipro,:,i)=matmul(Cx(ipro,:,:),shgl(1,:,i))
+        tCgy(ipro,:,j)=matmul(Cy(ipro,:,:),shgl(1,:,j))
+        tCgz(ipro,:,k)=matmul(Cz(ipro,:,:),shgl(1,:,k))
        enddo
        do itr=1,nenl
          shape(:,itr) = tCx(:,itr,i)*tCy(:,itr,j)*tCz(:,itr,k)
