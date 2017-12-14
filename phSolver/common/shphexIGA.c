@@ -1,5 +1,5 @@
- //shphexIGA.c
-//Build the data structures defining the structured grid IGA hex elements
+ //shphexiga.c
+//Build the data structures defining the structured grid iga hex elements
 #include <FCMangle.h>
 
 int HexIGAShapeAndDrv(int p, int quadPtIndex, double N[], double dN[][1]);
