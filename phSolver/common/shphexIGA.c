@@ -5,7 +5,7 @@
 int HexIGAShapeAndDrv(int p, int quadPtIndex, double N[], double dN[][1]);
 
 #define shphexiga FortranCInterface_GLOBAL_(shphexiga, SHPHEXIGA)
-void shphexIGA(int *p, int quadPtIndex, double N[], double dN[][1])
+void shphexiga(int *p, int quadPtIndex, double N[], double dN[][1])
 {
 
   HexIGAShapeAndDrv(*p,quadPtIndex,N,dN);
