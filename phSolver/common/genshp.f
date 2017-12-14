@@ -62,7 +62,7 @@ c           ADDED BY COREY NELSON TO BUILD HEXIGA ELEMENT
 c
                maxnint=max(maxnint,nint(lcsyst))
             do i=1,nint(lcsyst)
-               call shphexIGA  (ipord, i, shp(6,:,i),
+               call shphexiga  (ipord, i, shp(6,:,i),
      &                       shgl(6,:,:,i))
             enddo
 c

@@ -1,10 +1,10 @@
-//shphexIGA.c
+ //shphexIGA.c
 //Build the data structures defining the structured grid IGA hex elements
 #include <FCMangle.h>
 
 int HexIGAShapeAndDrv(int p, int quadPtIndex, double N[], double dN[][1]);
 
-#define shphexIGA FortranCInterface_GLOBAL_(shphexIGA, SHPHEXIGA)
+#define shphexiga FortranCInterface_GLOBAL_(shphexiga, SHPHEXIGA)
 void shphexIGA(int *p, int quadPtIndex, double N[], double dN[][1])
 {
 
