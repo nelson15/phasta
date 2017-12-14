@@ -39,7 +39,7 @@ int ien_1D(int n, int p, int num_elem, vector<vector<int> > *ien, vector<double>
  int ien_3D(vector<vector<int> > ien_1D, vector<vector<int> > * IEN, int num_elem_1D, int num_elems, int n, int p)
  {
 
-   IEN->resize(num_elems, vector<int>(n));
+   IEN->resize(num_elems, vector<int>(n*n*n));
 
    int eu, ev, ew, au, av, aw, iu, iv, iw, e, a, i;
    for(eu = 0; eu < num_elem_1D; eu++)
