@@ -2,18 +2,19 @@
 using namespace std;
 int main()
 {
-  int p = 3;
-  int num_elems = 16;
-  int n;
-  vector<double> Xi;
-  vector<vector<vector<double> > > C;
+  //parametric definitions
+  int p = 3; //polynomial order
+  int num_elems = 16;//number of elements in 1 direction (full domain is ne^3)
+  int n;//number of basis functions in 1D
+  vector<double> Xi;//knot vector
+  vector<vector<vector<double> > > C;//extraction operator
   C.resize(num_elems, vector<vector<double> >(p+1, vector<double>(p+1)));
-  double ki = 0.0;
+  double ki = 0.0;//domain goes from 0 to pi in each direction
   double kf = M_PI;
-  double h = kf/num_elems;
+  double h = kf/num_elems;//element size
 
-  knotVecCreate(num_elems, p, ki, kf, h, &Xi);
-  n = Xi.size() - p - 1;
+  knotVecCreate(num_elems, p, ki, kf, h, &Xi);//create knot vector
+  n = Xi.size() - p - 1;//get number of shape functions
   cout<< "n = " << n << endl;
   // for(auto & x : Xi)
   // {
@@ -21,7 +22,7 @@ int main()
   // }
   // cout << endl;
 
-  Extraction_1D(p, Xi, &C);
+  Extraction_1D(p, Xi, &C); //compute extraction operators
 
   //////////////////////////////////////////////////////////////////////////////
   //print out the extraction operator for each element
