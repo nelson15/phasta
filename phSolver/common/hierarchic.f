@@ -75,8 +75,10 @@ c Computing various matrix products
         tCgy(ipro,:,j)=matmul(Cy(ipro,:,:),shgl(1,:,j))
         tCgz(ipro,:,k)=matmul(Cz(ipro,:,:),shgl(1,:,k))
        enddo
+c Computing the tensor produts
        do itr=1,nenl
          shape(:,itr) = tCx(:,itr,i)*tCy(:,itr,j)*tCz(:,itr,k)
+c The derivative of the shape functions are computed
          shdrv(1,:,itr) = tCgx(:,itr,i)*tCy(:,itr,j)*tCz(:,itr,k)
          shdrv(2,:,itr) = tCx(:,itr,i)*tCgy(:,itr,j)*tCz(:,itr,k)
          shdrv(3,:,itr) = tCx(:,itr,i)*tCy(:,itr,j)*tCgz(:,itr,k)
